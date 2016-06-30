@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#a67c52</color>
+    <color name="colorPrimaryDark">#986a3c</color>
+    <color name="colorAccent">#FFD700</color>
+    <color name="darkTitle">#422505</color>
+    <color name="lightBackground">#fcddbc</color>
+    <color name="greenClicked">#08f810</color>
+
+    <color name="colorPrimary2">#138f8d</color>
+    <color name="colorPrimaryDark2">#106766</color>
+    <color name="colorAccent2">#41faf8</color>
+    <color name="darkTitle2">#0c4241</color>
+    <color name="lightBackground2">#de8ff5</color>
+    <color name="greenClicked2">#c12feb</color>
+
+
+</resources>
+

@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "319718658067",
+    "firebase_url": "https://torrwnt-notifier.firebaseio.com",
+    "project_id": "torrwnt-notifier",
+    "storage_bucket": "torrwnt-notifier.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:319718658067:android:87d20682a22f4981",
+        "android_client_info": {
+          "package_name": "com.basicelixir.pawel.torrentnotifier"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "319718658067-7ctj8nm6veupngjlfgo4kka3m8s9k7bl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5kCs-KWEHOJ-p3DvkADZr7qE2GfR8-gE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
