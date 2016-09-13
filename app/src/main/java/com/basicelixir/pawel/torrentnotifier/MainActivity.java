@@ -13,8 +13,14 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.os.ResultReceiver;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -27,20 +33,52 @@ import layout.HomeTab;
 import layout.ImdbTab;
 import layout.MyListTab;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     String TAG = "pawell";
     private ArrayList<Fragment> fragmentList;
     TabLayout tableLayout;
     MyResultReciver rr;
     HomeTab homeTab;
-    TextView title;
     boolean isInForeground = true;
+    Button messageBtn, openLoggInBtn,loggInBtn, createBtn,sendBtn;
+    View messageLayout,loggInLayout,createLayout;
+    private AlertDialog messageDialog,loggInDialog,createDialog;
+    private TextView title, messageWindow;
+    private EditText inputMessage, createUser, createPassword, userLogIn, passwordLoggIn;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        LayoutInflater inflater = getLayoutInflater();
+        messageLayout = inflater.inflate(R.layout.message_dialog,null);
+        loggInLayout = inflater.inflate(R.layout.loggin_layout,null);
+        createLayout = inflater.inflate(R.layout.create_dialog,null);
+        messageBtn = (Button)findViewById(R.id.messageBtn);
+        messageBtn.setOnClickListener(this);
+        openLoggInBtn =(Button)findViewById(R.id.openLoggin);
+        openLoggInBtn.setOnClickListener(this);
+        loggInBtn =(Button)loggInLayout.findViewById(R.id.loggInBtn);
+        loggInBtn.setOnClickListener(this);
+        createUser =(EditText)createLayout.findViewById(R.id.craeteUser_ET);
+        createPassword = (EditText)createLayout.findViewById(R.id.create_password);
+        userLogIn = (EditText)loggInLayout.findViewById(R.id.username_ET);
+        passwordLoggIn =(EditText)loggInLayout.findViewById(R.id.password_ET); 
+        createBtn = (Button)createDialog.findViewById(R.id.createBtn);
+        createBtn.setOnClickListener(this);
+        
+
+
+
+        sendBtn =(Button)messageLayout.findViewById(R.id.send_Btn);
+        sendBtn.setOnClickListener(this);
+        messageWindow =(TextView)messageLayout.findViewById(R.id.message_window);
+        inputMessage =(EditText)messageLayout.findViewById(R.id.input_messge_ET);
+
+
+
         title = (TextView) findViewById(R.id.tr);
         Typeface typeface = Typeface.createFromAsset(getApplicationContext().getAssets(), "fonts/ubuntu.ttf");
         title.setTypeface(typeface);
@@ -78,6 +116,54 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setAdapter(myPagerAdapter);
 
         tableLayout.setupWithViewPager(viewPager);
+
+    }
+
+    @Override
+    public void onClick(View v) {
+        if(v==messageBtn){
+            Log.i(TAG, "onClick: open dialog");
+            if(messageDialog ==null ) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setView(messageLayout);
+                messageDialog = builder.create();
+                messageDialog.show();
+            }else{
+                messageDialog.show();
+            }
+        }
+        if(v==messageLayout.findViewById(R.id.send_Btn)){
+            messageWindow.setText(inputMessage.getText().toString());
+        }
+        if(v==findViewById(R.id.openLoggin)){
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setView(loggInLayout);
+            loggInDialog =builder.create();
+            loggInDialog.show();
+
+        }
+        if(v==loggInDialog.findViewById(R.id.loggInBtn)){
+            /////////
+            //////////7
+
+        }
+        if(v==loggInDialog.findViewById(R.id.open_create_Btn)){
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setView(createLayout);
+            createDialog = builder.create();
+            createDialog.show();
+            
+        }
+        
+        if(v==createDialog.findViewById(R.id.createBtn)){
+            String username="";
+            String password="";
+            createNewUser(username,password);
+        }
+    }
+
+    private void createNewUser(String username, String password) {
 
     }
 
