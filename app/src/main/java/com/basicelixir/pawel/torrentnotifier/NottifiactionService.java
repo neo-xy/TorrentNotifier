@@ -5,7 +5,7 @@ import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.os.ResultReceiver;
+import android.os.ResultReceiver;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -17,8 +17,11 @@ import io.realm.Realm;
 import io.realm.RealmQuery;
 import io.realm.RealmResults;
 
-
+/**
+ * Created by Pawel on 23/09/2016.
+ */
 public class NottifiactionService extends IntentService {
+
     String TAG = "pawell";
     ArrayList<NewTorrentMovies> newTorrentMovies;
     ArrayList<Movie> moviesAvailable;

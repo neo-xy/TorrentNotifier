@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginBottom="5dp"
+    android:background="@drawable/just_added_background"
     android:gravity="center"
     android:orientation="horizontal"
-android:background="@drawable/just_added_background"
     android:paddingLeft="12dp"
     android:paddingRight="12dp">
 
@@ -28,10 +29,9 @@ android:background="@drawable/just_added_background"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_marginLeft="7dp"
-        android:scaleType="centerCrop"
         android:layout_gravity="center"
-        android:src="@drawable/checked_selector"
-android:background="@android:color/transparent"
-        />
+        android:layout_marginLeft="7dp"
+        android:background="@android:color/transparent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/checked_selector" />
 </LinearLayout>

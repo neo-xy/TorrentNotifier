@@ -12,7 +12,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import com.basicelixir.pawel.torrentnotifier.ImdbListener;
 import com.basicelixir.pawel.torrentnotifier.Movie;
 import com.basicelixir.pawel.torrentnotifier.R;
 
@@ -25,7 +24,6 @@ public class ImdbTab extends Fragment implements View.OnClickListener {
 
     WebView webView;
     String TAG = "pawell";
-    ImdbListener imdbLisener;
     String movieURL;
 
     public ImdbTab() {

@@ -36,6 +36,7 @@
             android:layout_weight="1"
             android:gravity="center_vertical"
             android:text="Title"
+            android:maxLines="1"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="@android:color/white" />
 

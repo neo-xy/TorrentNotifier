@@ -2,14 +2,18 @@ package layout;
 
 
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+
 
 import com.basicelixir.pawel.torrentnotifier.Movie;
 import com.basicelixir.pawel.torrentnotifier.MyListAdapter;
@@ -27,6 +31,7 @@ public class MyListTab extends Fragment implements View.OnClickListener {
     String TAG = "pawell";
     MyListAdapter myListAdapter;
     RealmResults<Movie> results;
+    Button deleteBtn;
 
 
     @Override
@@ -34,14 +39,15 @@ public class MyListTab extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.my_list_tab, container, false);
 
-        Button button = (Button) view.findViewById(R.id.deleteBtn);
-        button.setOnClickListener(this);
+        deleteBtn = (Button) view.findViewById(R.id.deleteBtn);
+        deleteBtn.setOnClickListener(this);
+        deleteBtn.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
 
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.my_rec);
         Realm realm = Realm.getDefaultInstance();
         RealmResults<Movie> results = realm.where(Movie.class).findAll();
 
-        myListAdapter = new MyListAdapter(results, getContext(), button);
+        myListAdapter = new MyListAdapter(results, getContext(), deleteBtn);
         recyclerView.setAdapter(myListAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         return view;
@@ -59,8 +65,12 @@ public class MyListTab extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View v) {
         //TODO si new ArrayLIst needed?
-        ArrayList<Integer> itemToDelete = myListAdapter.getItemsToDelete();
-        deleteFromList(itemToDelete);
+
+    Log.i(TAG, "onClick: hhhh");
+    ArrayList<Integer> itemToDelete = myListAdapter.getItemsToDelete();
+    if(itemToDelete.size()>0) {
+    deleteFromList(itemToDelete);
+}
     }
 
     private void deleteFromList(final ArrayList<Integer> itemToDelete) {
@@ -81,5 +91,8 @@ public class MyListTab extends Fragment implements View.OnClickListener {
         RealmResults<Movie> newResults = realm.where(Movie.class).findAll();
         realm.close();
         myListAdapter.update(newResults);
+        if(newResults.size()==0){
+            deleteBtn.setVisibility(View.GONE);
+        }
     }
 }
