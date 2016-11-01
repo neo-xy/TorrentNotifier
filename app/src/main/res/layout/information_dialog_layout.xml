@@ -15,7 +15,7 @@ android:background="@android:color/transparent"
         android:layout_height="match_parent"
         android:textColor="#D1D6E7"
         android:background="@drawable/information_dialog_drawable"
-        android:text="Have You seen it? -then watch again, haven't seen it? -You know knowthing Jon Snow"
+        android:text="Seen it already? -then watch again, haven't seen it? -You know knowthing Jon Snow"
         android:textSize="19sp" />
     <ImageView
         android:layout_gravity="center"

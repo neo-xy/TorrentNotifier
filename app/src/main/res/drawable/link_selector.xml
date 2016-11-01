@@ -6,7 +6,7 @@
     </item>
 
     <item android:state_pressed="true">
-        <bitmap android:src="@drawable/link" android:tint="@color/greenClicked2"></bitmap>
+        <bitmap android:src="@drawable/link" android:tint="@color/colorClicked2"></bitmap>
     </item>
 
 </selector>

@@ -10,22 +10,17 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ViewFlipper;
 
 import com.basicelixir.pawel.torrentnotifier.JustAddedAdapter;
 import com.basicelixir.pawel.torrentnotifier.Movie;
@@ -40,13 +35,11 @@ import io.realm.Realm;
 import io.realm.RealmChangeListener;
 import io.realm.RealmResults;
 
-public class HomeTab extends Fragment implements View.OnClickListener, TextWatcher, View.OnGenericMotionListener {
+public class HomeTab extends Fragment implements View.OnClickListener, View.OnGenericMotionListener {
 
     Rect movieTipRect;
-    ViewFlipper viewFliper;
-    ImageButton askBtn, informationBtn;
-    EditText editText;
-    TextView titleAdded, top5header, tipHeader, movieTip, ttt,inf;
+    ImageButton  informationBtn;
+    TextView titleAdded, top5header, tipHeader, movieTip, tipInf;
     TextView textView1, textView2, textView3, textView4, textView5;
     ImageView addView1, addView2, addView3, addView4, addView5;
     ImageView linkView1, linkView2, linkView3, linkView4, linkView5;
@@ -54,7 +47,8 @@ public class HomeTab extends Fragment implements View.OnClickListener, TextWatch
     String TAG = "pawell";
     RecyclerView recyclerView;
     Realm realm;
-    View view;
+    AlertDialog alertDialog;
+    View view,view2;
     RealmResults<Movie> results;
     JustAddedAdapter justAddedAdapter;
     RealmChangeListener callback = new RealmChangeListener() {
@@ -84,8 +78,6 @@ public class HomeTab extends Fragment implements View.OnClickListener, TextWatch
         textView4.setTypeface(typeface);
         textView5.setTypeface(typeface);
 
-        ttt.setOnClickListener(this);
-        editText.addTextChangedListener(this);
         informationBtn.setOnClickListener(this);
 
         realm = Realm.getDefaultInstance();
@@ -94,8 +86,13 @@ public class HomeTab extends Fragment implements View.OnClickListener, TextWatch
 
         recyclerView.setAdapter(justAddedAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        view2 = LayoutInflater.from(getContext())
+                .inflate(R.layout.information_dialog_layout, null);
+        alertDialog = new AlertDialog.Builder(getContext(), R.style.ert).create();
+        alertDialog.setView(view2);
+        tipInf = (TextView)view2.findViewById(R.id.inf_text);
 
-        rootRef.addChildEventListener(new ChildEventListener() {
+        rootRef.child("top5").addChildEventListener(new ChildEventListener() {
 
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -144,16 +141,25 @@ public class HomeTab extends Fragment implements View.OnClickListener, TextWatch
                 break;
             case "imdb1":
                 imdb1 = dataSnapshot.getValue(String.class);
+                break;
             case "imdb2":
                 imdb2 = dataSnapshot.getValue(String.class);
+                break;
             case "imdb3":
                 imdb3 = dataSnapshot.getValue(String.class);
+                break;
             case "imdb4":
                 imdb4 = dataSnapshot.getValue(String.class);
+                break;
             case "imdb5":
                 imdb5 = dataSnapshot.getValue(String.class);
+                break;
             case "movieTipOfTheDay":
                 movieTip.setText(dataSnapshot.getValue(String.class));
+                break;
+            case "tipInfo":
+                tipInf.setText(dataSnapshot.getValue(String.class));
+                break;
             default:
 
                 break;
@@ -228,13 +234,11 @@ public class HomeTab extends Fragment implements View.OnClickListener, TextWatch
                 break;
             case R.id.delete_button:
                 break;
-            case R.id.ttt:
-                Log.i(TAG, "onClick: flipper");
-                manageFlipper();
-                break;
+
             case R.id.information_IB:
                 hendleInformationClick();
                 break;
+
 
         }
 
@@ -250,13 +254,14 @@ public class HomeTab extends Fragment implements View.OnClickListener, TextWatch
 
         Rect informationDialogRect = new Rect();
 
-
-        View view2 = LayoutInflater.from(getContext())
-                .inflate(R.layout.information_dialog_layout, null);
-        AlertDialog alertDialog = new AlertDialog.Builder(getContext(), R.style.ert).create();
-        alertDialog.setView(view2);
+//
+//        View view2 = LayoutInflater.from(getContext())
+//                .inflate(R.layout.information_dialog_layout, null);
+//        AlertDialog alertDialog = new AlertDialog.Builder(getContext(), R.style.ert).create();
+//        alertDialog.setView(view2);
 
         alertDialog.show();
+
 
         int px = (getResources().getDisplayMetrics().widthPixels);
         double g = px / 1.5;
@@ -269,11 +274,6 @@ public class HomeTab extends Fragment implements View.OnClickListener, TextWatch
 
     }
 
-    private void manageFlipper() {
-        viewFliper.showNext();
-
-
-    }
 
     private void openLink(String imdbLink) {
         imdbLink = "http://www." + imdbLink;
@@ -337,10 +337,6 @@ public class HomeTab extends Fragment implements View.OnClickListener, TextWatch
         top5header = (TextView) view.findViewById(R.id.top_5_header);
         tipHeader = (TextView) view.findViewById(R.id.kill_time_header_TV);
         movieTip = (TextView) view.findViewById(R.id.movie_tip_TV);
-        viewFliper = (ViewFlipper) view.findViewById(R.id.flipper);
-        ttt = (TextView) view.findViewById(R.id.ttt);
-        editText = (EditText) view.findViewById(R.id.ask_ET);
-        askBtn = (ImageButton) view.findViewById(R.id.ask_sent_IB);
         informationBtn = (ImageButton) view.findViewById(R.id.information_IB);
 
 
@@ -367,30 +363,6 @@ public class HomeTab extends Fragment implements View.OnClickListener, TextWatch
         addView3.setOnClickListener(this);
         addView4.setOnClickListener(this);
         addView5.setOnClickListener(this);
-
-        inf = (TextView)getActivity().findViewById(R.id.inf_text);
-
-
-    }
-
-    @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-        Log.i(TAG, "beforeTextChanged: " + s + " " + " " + count + " ");
-    }
-
-    @Override
-    public void onTextChanged(CharSequence s, int start, int before, int count) {
-        Log.i(TAG, "onTextChanged: " + s + " " + start + " " + before + " " + count);
-        if (count > 0) {
-            askBtn.setVisibility(View.VISIBLE);
-        } else {
-            askBtn.setVisibility(View.GONE);
-        }
-    }
-
-    @Override
-    public void afterTextChanged(Editable s) {
-        Log.i(TAG, "afterTextChanged: " + s);
 
     }
 

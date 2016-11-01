@@ -27,7 +27,7 @@
         android:paddingTop="20dp"
         android:text="Day just got a little bit brighter :)"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@color/greenClicked2"
+        android:textColor="@color/colorClicked2"
         android:visibility="gone" />
 
     <android.support.v7.widget.RecyclerView
@@ -62,14 +62,7 @@
         android:layout_marginRight="20dp"
         android:layout_marginTop="7dp" />
 
-    <include
-        layout="@layout/ask_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/something"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="7dp" />
+
 
 </RelativeLayout>
 </ScrollView>
