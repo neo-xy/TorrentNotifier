@@ -1,91 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#b8b6b6"
     tools:context="com.basicelixir.pawel.torrentnotifier.MainActivity">
 
-    <ImageView
-        android:id="@+id/background"
+    <include
+        android:id="@+id/myTooolbar"
+        layout="@layout/toolbar"></include>
+
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="fitXY" />
+        android:layout_height="match_parent">
 
-    <LinearLayout
-        android:id="@+id/header"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        <ImageView
+            android:id="@+id/background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY" />
 
-        android:layout_margin="5dp"
-        android:layout_marginLeft="5dp"
-        android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/openLoggin"
-            android:layout_width="wrap_content"
+        <android.support.design.widget.TabLayout
+            android:id="@+id/my_tab"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="left"
-            android:background="#000000"
-            android:text="loggin" />
+
+            android:background="#3a3939"
+            app:tabSelectedTextColor="#FFD700"
+            app:tabTextColor="@android:color/white"></android.support.design.widget.TabLayout>
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/my_pager"
+
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/my_tab">
+
+        </android.support.v4.view.ViewPager>
 
 
-
-        <TextView
-            android:id="@+id/tr"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="left"
-            android:layout_weight="1"
-            android:gravity="center_horizontal"
-            android:padding="5dp"
-            android:text="Torrent Notifire"
-            android:textColor="@color/darkTitle2"
-            android:textSize="25sp" />
-
-        <RelativeLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <Button
-                android:id="@+id/btn_chat"
-                android:layout_width="50dp"
-                android:layout_height="wrap_content"
-                android:background="@drawable/ic_chat"  />
-            <Button
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:id="@+id/btn_chat_notis"
-                android:layout_alignRight="@+id/btn_chat"
-                android:background="@drawable/circle_selector"
-                android:elevation="2dp"
-                android:visibility="invisible"
-                />
-
-        </RelativeLayout>
-
-
-
-
-    </LinearLayout>
-
-    <android.support.design.widget.TabLayout
-        android:id="@+id/my_tab"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/header"
-        android:background="@color/colorPrimary2"
-        app:tabSelectedTextColor="@color/colorAccent2"
-        app:tabTextColor="@android:color/white"></android.support.design.widget.TabLayout>
-
-    <android.support.v4.view.ViewPager
-        android:id="@+id/my_pager"
-
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/my_tab">
-
-    </android.support.v4.view.ViewPager>
-
-
-</RelativeLayout>
+    </RelativeLayout>
+</LinearLayout>

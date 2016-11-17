@@ -122,6 +122,7 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
     }
 
 
+
     private void setTop5(DataSnapshot dataSnapshot) {
         switch (dataSnapshot.getKey()) {
             case "nr1":
@@ -252,13 +253,6 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
         movieTipRect = new Rect();
         movieTip.getGlobalVisibleRect(movieTipRect);
 
-        Rect informationDialogRect = new Rect();
-
-//
-//        View view2 = LayoutInflater.from(getContext())
-//                .inflate(R.layout.information_dialog_layout, null);
-//        AlertDialog alertDialog = new AlertDialog.Builder(getContext(), R.style.ert).create();
-//        alertDialog.setView(view2);
 
         alertDialog.show();
 
@@ -371,5 +365,9 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
 
         Log.i(TAG, "onGenericMotion: " + event.getAxisValue(MotionEvent.AXIS_Y));
         return false;
+    }
+
+    public void setTitleAddedToGone() {
+        titleAdded.setVisibility(View.GONE);
     }
 }

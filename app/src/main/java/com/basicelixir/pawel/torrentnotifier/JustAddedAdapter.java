@@ -1,7 +1,7 @@
 package com.basicelixir.pawel.torrentnotifier;
 
-import android.app.Activity;
 import android.content.Context;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,13 +12,13 @@ import android.widget.TextView;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
+import layout.HomeTab;
 
 /**
  * Created by Pawel on 15/06/2016.
  */
 
 public class JustAddedAdapter extends RecyclerView.Adapter<JustAddedAdapter.MyViewHolder> {
-    Activity activity;
     Context context;
     LayoutInflater layoutInflater;
     RealmResults<Movie> results;
@@ -27,7 +27,6 @@ public class JustAddedAdapter extends RecyclerView.Adapter<JustAddedAdapter.MyVi
     public JustAddedAdapter(RealmResults results, Context context) {
         update(results);
         this.context = context;
-        this.activity = activity;
         layoutInflater = LayoutInflater.from(context);
     }
 
@@ -49,6 +48,7 @@ public class JustAddedAdapter extends RecyclerView.Adapter<JustAddedAdapter.MyVi
     }
 
     public void update(RealmResults<Movie> results) {
+
         this.results = results;
         notifyDataSetChanged();
     }
@@ -95,6 +95,11 @@ public class JustAddedAdapter extends RecyclerView.Adapter<JustAddedAdapter.MyVi
                                 .equalTo("activated", true)
                                 .findAll();
                         update(results);
+                        if (results.size() == 0) {
+                            FragmentActivity a = (FragmentActivity) context;
+                            HomeTab homeTab = (HomeTab) a.getSupportFragmentManager().getFragments().get(0);
+                            homeTab.setTitleAddedToGone();
+                        }
                     }
                 });
 

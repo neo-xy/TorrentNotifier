@@ -1,39 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:ems="10"
-        android:hint="email"
-        android:text="yy@yy.com"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="80dp"
-        android:id="@+id/craeteUser_ET" />
 
-    <EditText
+    <com.facebook.login.widget.LoginButton
+        android:id="@+id/faceBook_login_button"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:ems="10"
-        android:text="qwerty"
-        android:hint="password"
-        android:focusable="true"
-        android:layout_below="@+id/craeteUser_ET"
-        android:layout_alignLeft="@+id/craeteUser_ET"
-        android:layout_alignStart="@+id/craeteUser_ET"
-        android:layout_marginTop="84dp"
-        android:id="@+id/create_password" />
+        android:layout_height="wrap_content" />
 
-    <Button
-        android:text="Create"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/create_password"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="92dp"
-        android:id="@+id/btn_create" />
+
+
+
 </RelativeLayout>

@@ -5,8 +5,13 @@ import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.ResultReceiver;
 import android.util.Log;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -22,20 +27,23 @@ import io.realm.RealmResults;
  */
 public class NottifiactionService extends IntentService {
 
+
     String TAG = "pawell";
     ArrayList<NewTorrentMovies> newTorrentMovies;
     ArrayList<Movie> moviesAvailable;
     String[] camExcetions = {".CAM.", "CAMRip", "HDCAM", "HD-TC", ".CAM-", "HD-TS"};
 
     Context context;
-    ResultReceiver rr;
+    android.support.v4.os.ResultReceiver rr;
     Realm realm;
     String movieSaved = "";
     String torrentName;
     Realm realm2 = null;
+    boolean contains;
 
     public NottifiactionService() {
         super("NottifiactionService");
+        Log.i(TAG, "NottifiactionService: ");
         moviesAvailable = new ArrayList<Movie>();
         context = this;
 
@@ -43,12 +51,16 @@ public class NottifiactionService extends IntentService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        rr = intent.getParcelableExtra("reciver");
+        rr = (android.support.v4.os.ResultReceiver)intent.getParcelableExtra("reciver");
+
+
+        
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        Log.i(TAG, "onHandleIntent: ");
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -84,6 +96,20 @@ public class NottifiactionService extends IntentService {
 
                                             fireNotification(moviesToShowResult);
                                         }
+                                        FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("question").addListenerForSingleValueEvent(new ValueEventListener() {
+                                            @Override
+                                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                                if(dataSnapshot.getValue()==null){
+                                                    Log.i(TAG, "onDataChange: nulll");
+                                                }else
+                                                    Log.i(TAG, "onDataChange: elllse");
+                                            }
+
+                                            @Override
+                                            public void onCancelled(DatabaseError databaseError) {
+
+                                            }
+                                        });
                                     }
                                 });
                             }
@@ -104,23 +130,34 @@ public class NottifiactionService extends IntentService {
                 }
             }
         }).start();
+
+
     }
 
     private ArrayList<NewTorrentMovies> checkForCam(ArrayList<NewTorrentMovies> newTorrentMovies) {
         ArrayList<NewTorrentMovies> nt = new ArrayList<>();
         for (int i = 0; i < newTorrentMovies.size(); i++) {
-            for (int j = 0; j < camExcetions.length; j++) {
-                if (!newTorrentMovies.get(i).getFulltorrentName().toLowerCase().contains(camExcetions[j].toLowerCase())) {
+
+                if(containsCam(newTorrentMovies.get(i).getFulltorrentName().toLowerCase())==false){
                     nt.add(newTorrentMovies.get(i));
-                }else{
-                    Log.i(TAG, "checkForCam: "+ newTorrentMovies.get(i).getFulltorrentName());
                 }
-            }
+
         }
         return nt;
     }
+    public boolean containsCam(String torrentName){
+        contains=false;
+        for (int i = 0; i <camExcetions.length ; i++) {
+           if( torrentName.contains(camExcetions[i].toLowerCase())){
+                contains=true;
+            }
+        }
+
+        return contains;
+    }
 
     public void fireNotification(RealmResults<Movie> moviesToShow) {
+        Log.i(TAG, "fireNotification: ");
         if (moviesToShow != null && moviesToShow.size() > 0) {
             for (int i = 0; i < moviesToShow.size(); i++) {
                 String fullTorrentName = moviesToShow.get(i).getTorrentFullName();

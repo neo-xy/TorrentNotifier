@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,14 +15,17 @@ import android.support.v4.app.Fragment;
 import android.support.v4.os.ResultReceiver;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -37,85 +41,102 @@ import layout.HomeTab;
 import layout.ImdbTab;
 import layout.MyListTab;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, FacebookLogOutListener {
     String TAG = "pawell";
     private ArrayList<Fragment> fragmentList;
     TabLayout tableLayout;
     MyResultReciver rr;
     HomeTab homeTab;
     boolean isInForeground = true;
-    Button openLoggInBtn, loggInBtn, createBtn, sendBtn, openCreateWindow,btnChat,btnChatNotis;
+    Button btnChat, btnChatNotis;
     View messageLayout, loggInLayout, createLayout;
-    private TextView title, messageWindow;
     FirebaseAuth firebaseauth;
     FirebaseAuth.AuthStateListener authListener;
     DatabaseReference dbReference;
-
+    Toolbar toolbar;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(this);
         setContentView(R.layout.activity_main);
+        toolbar = (Toolbar) findViewById(R.id.myTooolbar);
+        //
+
+        setSupportActionBar(toolbar);
         LayoutInflater inflater = getLayoutInflater();
         messageLayout = inflater.inflate(R.layout.message_dialog, null);
-        loggInLayout = inflater.inflate(R.layout.loggin_layout, null);
         createLayout = inflater.inflate(R.layout.create_dialog, null);
 
-        openLoggInBtn = (Button) findViewById(R.id.openLoggin);
-        openLoggInBtn.setOnClickListener(this);
-        loggInBtn = (Button) loggInLayout.findViewById(R.id.loggInBtn);
-        loggInBtn.setOnClickListener(this);
-        createBtn = (Button) createLayout.findViewById(R.id.btn_create);
-        createBtn.setOnClickListener(this);
-        openCreateWindow = (Button) loggInLayout.findViewById(R.id.btn_open_create);
-        openCreateWindow.setOnClickListener(this);
-        btnChat =(Button)findViewById(R.id.btn_chat);
+        btnChat = (Button) findViewById(R.id.btn_chat);
         btnChat.setOnClickListener(this);
-        btnChatNotis =(Button)findViewById(R.id.btn_chat_notis);
+        btnChatNotis = (Button) findViewById(R.id.btn_chat_notis);
 
 
-        firebaseauth =FirebaseAuth.getInstance();
+        firebaseauth = FirebaseAuth.getInstance();
+
         dbReference = FirebaseDatabase.getInstance().getReference();
 
 
-       authListener = new FirebaseAuth.AuthStateListener() {
-           @Override
-           public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+        authListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
 
-               FirebaseUser fireUser = firebaseAuth.getCurrentUser();
-               
-               if(fireUser!=null){
-               }if(fireUser==null) {
-               }else{
-               }
-           }
-       };
+                FirebaseUser fireUser = firebaseAuth.getCurrentUser();
 
 
-        title = (TextView) findViewById(R.id.tr);
+                if (fireUser != null) {
+
+                    btnChat.setEnabled(true);
+                    btnChat.getBackground().setTint(Color.WHITE);
+                }
+                if (fireUser == null) {
+                    btnChat.setEnabled(false);
+                    btnChat.getBackground().setTintList(null);
+                } else {
+                }
+            }
+        };
+
+
         Typeface typeface = Typeface.createFromAsset(getApplicationContext().getAssets(), "fonts/ubuntu.ttf");
-        title.setTypeface(typeface);
         ViewPager viewPager = (ViewPager) findViewById(R.id.my_pager);
         ImageView background = (ImageView) findViewById(R.id.background);
-        Glide.with(this)
-                .load(R.drawable.bg3)
-                .into(background);
+//        Glide.with(this)
+//                .load(R.drawable.bg3)
+//                .into(background);
+
+//        Intent serviceintent =new Intent(this, FirebaseBackgroundService.class);
+//        PendingIntent pendingintent =PendingIntent.getService(this,0, serviceintent,0);
+//        AlarmManager alarm =(AlarmManager)getSystemService(getApplicationContext().ALARM_SERVICE);
+//        alarm.cancel(pendingintent);
+//        alarm.setRepeating(AlarmManager.RTC_WAKEUP,System.currentTimeMillis(),5000, pendingintent);
+
         tableLayout = (TabLayout) findViewById(R.id.my_tab);
         rr = new MyResultReciver(null);
-this.getSupportFragmentManager();
+        this.getSupportFragmentManager();
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         Intent intent = new Intent(this, NottifiactionService.class);
         intent.putExtra("reciver", rr);
+       // startService(intent);
 
         PendingIntent pendingIntent = PendingIntent.getService(this, 100, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             long time = Calendar.getInstance().getTimeInMillis();
-            //   alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,time,10000,pendingIntent);
-            alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 1000, 5000, pendingIntent);
+             //alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,time,10000,pendingIntent);
+           // alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 1000, 5000, pendingIntent);
+
+
+
         } else {
             Log.i(TAG, "else");
         }
+
+      Intent intent1 = new Intent(this,FirebaseBackgroundService.class);
+        this.startService(intent1);
+
 
         homeTab = new HomeTab();
         fragmentList = new ArrayList<Fragment>();
@@ -127,8 +148,8 @@ this.getSupportFragmentManager();
         viewPager.setAdapter(myPagerAdapter);
 
         tableLayout.setupWithViewPager(viewPager);
-
-        if(firebaseauth.getCurrentUser()!=null) {
+        if (firebaseauth.getCurrentUser() != null) {
+            
             checkForMessages(firebaseauth.getCurrentUser().getUid(), dbReference);
         }
 
@@ -139,11 +160,10 @@ this.getSupportFragmentManager();
         dbReference.child("users").child(uid).child("question").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.i(TAG, "onDataChange: maiiiin");
                 if (dataSnapshot.getValue() != null) {
                     btnChatNotis.setText("1");
                     btnChatNotis.setVisibility(View.VISIBLE);
-                }else{
+                } else {
                     btnChatNotis.setVisibility(View.GONE);
                 }
             }
@@ -160,19 +180,23 @@ this.getSupportFragmentManager();
 
     @Override
     public void onClick(View v) {
-        if(v==findViewById(R.id.btn_chat)){
 
-          ChatDialog chatDialog = new ChatDialog();
-            chatDialog.show(getSupportFragmentManager(),"rt");
 
-        }
-        if(v==findViewById(R.id.openLoggin)){
-            LoggInDialog loggInDialog = new LoggInDialog();
-            loggInDialog.show(getSupportFragmentManager(),"ee");
+        if (v == findViewById(R.id.btn_chat)) {
 
+            ChatDialog chatDialog = new ChatDialog();
+            chatDialog.show(getSupportFragmentManager(), "rt");
 
         }
     }
+
+    @Override
+    public void logOutListener(boolean isSignedOut) {
+        btnChat.setEnabled(false);
+        firebaseauth.signOut();
+
+    }
+
 
     @SuppressLint("ParcelCreator")
     public class MyResultReciver extends ResultReceiver {
@@ -184,7 +208,7 @@ this.getSupportFragmentManager();
         protected void onReceiveResult(int resultCode, Bundle resultData) {
             super.onReceiveResult(resultCode, resultData);
             Log.i(TAG, "onReceiveResult: ");
-            //  if (resultCode == 1) {
+//              if (resultCode == 1) {
 //                torrentName = (String) resultData.get("torrent");
 //                imdbURl = (String) resultData.get("url");
 
@@ -223,6 +247,33 @@ this.getSupportFragmentManager();
     @Override
     protected void onStop() {
         super.onStop();
-        firebaseauth.removeAuthStateListener(authListener);
+        if(authListener!=null) {
+            firebaseauth.removeAuthStateListener(authListener);
+        }
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.menu_create:
+
+                CreateDialog createDialog = new CreateDialog();
+                createDialog.show(getSupportFragmentManager(), "rr");
+
+                break;
+
+            default:
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
 }

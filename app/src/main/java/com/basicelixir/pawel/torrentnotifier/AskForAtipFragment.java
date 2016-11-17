@@ -5,13 +5,19 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.PopupMenu;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,11 +38,12 @@ import java.util.Random;
  * Created by Pawel on 04/10/2016.
  */
 
-public class AskForAtipFragment extends Fragment implements View.OnClickListener {
+public class AskForAtipFragment extends Fragment implements View.OnClickListener,ListListener {
 
     FirebaseDatabase firebase;
     FirebaseAuth fireAuth;
     DatabaseReference askReference;
+
 
     View view;
     String currentUser;
@@ -44,6 +51,8 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
     String lastUser;
     String timeStemp;
     String TAG = "pawell";
+    Spinner spinner;
+    ImageButton reportButtn;
 
 
     LinearLayout linearLayout;
@@ -77,6 +86,8 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
         timer = (TextView) view.findViewById(R.id.stoper_tv);
         scrollView =(ScrollView)view.findViewById(R.id.ask_for_scroll);
         countBtn = (TextView) view.findViewById(R.id.tv_count);
+        reportButtn = (ImageButton)view.findViewById(R.id.ib_report);
+        reportButtn.setOnClickListener(this);
 
         linearLayout = (LinearLayout) view.findViewById(R.id.ask_for_ll);
         message = new Message(getContext());
@@ -88,7 +99,6 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
         pickedUser = "";
         lastUser = "";
         sdf = new SimpleDateFormat("mm:ss");
-        de = new Date(180000 - g);
         countBtn.setText("number of left messages: 10");
 
 
@@ -139,7 +149,7 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
                 if (timeStemp != null && lastUser != null) {
                     if ((System.currentTimeMillis() - Long.parseLong(timeStemp)) < 100000) {
                        // countBtn.setText(String.valueOf(10-numberOfMessages));
-                        message.fillUpWindowMessage(askReference, currentUser, lastUser, timeStemp, linearLayout,scrollView);
+                        message.fillUpWindowMessage(askReference, currentUser, lastUser, timeStemp, linearLayout,scrollView, AskForAtipFragment.this);
 
                     } else {
                         linearLayout.removeAllViews();
@@ -164,10 +174,9 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
 
     private void setTimer() {
         g = System.currentTimeMillis() - Long.parseLong(timeStemp);
-        countDownTimer = new CountDownTimer(100000 - g, 1000) {
+        countDownTimer = new CountDownTimer(Message.timeAvailable - g, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-
                 timer.setVisibility(View.VISIBLE);
                 timer.setText(sdf.format(millisUntilFinished));
             }
@@ -193,57 +202,102 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
 
     }
 
-    private String pickRandomUserFromTheList() {
+    private void pickRandomUserFromTheList() {
         users = new ArrayList<>();
-        users = message.getListOfUSers();
-        while (pickedUser.equals("") || pickedUser.equals(currentUser)) {
+        message.getListOfUSers(this);
 
-            Random random = new Random();
-            int pick = random.nextInt(users.size());
-            pickedUser = (String) users.get(pick);
-            lastUser = pickedUser;
-        }
-        timeStemp = String.valueOf(System.currentTimeMillis());
-        firebase.getReference().child("users").child(currentUser).child("timeStemp").setValue(timeStemp);
-        firebase.getReference().child("users").child(currentUser).child("lastUser").setValue(lastUser);
-
-
-        askReference.child(lastUser).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                numberOfMessages = dataSnapshot.getChildrenCount();
-                askReference.child(lastUser).child(numberOfMessages + "ma").setValue(insertMessageEt.getText().toString());
-                countBtn.setText(String.valueOf(9-numberOfMessages));
-                firebase.getReference().child("users").child(lastUser).child("question").setValue(askReference.child(lastUser).toString());
-                message.fillUpWindowMessage(askReference, currentUser, lastUser, timeStemp, linearLayout,scrollView);
-                setTimer();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-        return pickedUser;
     }
 
     @Override
     public void onClick(View v) {
-        if (lastUser != null && timeStemp != null && System.currentTimeMillis() - Long.parseLong(timeStemp) < 300000 && !lastUser.equals("")) {
+        if(v.getId() == R.id.ib_report){
+            PopupMenu popupMenu = new PopupMenu(getContext(),v);
+            final Menu menu = popupMenu.getMenu();
+            popupMenu.getMenuInflater().inflate(R.menu.report_menu,menu);
+            popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    if(item==menu.findItem(R.id.report_item)){
+                        Log.i(TAG, "onMenuItemClick: ");
+                       LinearLayout ll = message.getConversation();
+                        int t =ll.getChildCount();
+                        ArrayList<String>textMessages = new ArrayList<String>();
+                        for (int i = 0; i < ll.getChildCount(); i++) {
+                            TextView mess = (TextView)ll.getChildAt(i);
+                            textMessages.add(mess.getText().toString());
+
+                        }
+                        ReportedMessage rm = new ReportedMessage(textMessages,currentUser, lastUser, new Date().getTime(),"ask");
+                        firebase.getReference().child("Reported").push().setValue(rm);
+                        Toast.makeText(getContext(),"User Reported",Toast.LENGTH_LONG).show();
+                    }
+                    return true;
+                }
+            });
+            popupMenu.show();
+        }
+        if(v.getId()== R.id.ask_for_btn_send2) {
+            if (lastUser != null && timeStemp != null && System.currentTimeMillis() - Long.parseLong(timeStemp) < 300000 && !lastUser.equals("")) {
+
+
+                askReference.child(lastUser).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        numberOfMessages = dataSnapshot.getChildrenCount();
+                        if (numberOfMessages < 10) {
+
+                            countBtn.setText(String.valueOf(9 - numberOfMessages));
+                            askReference.child(lastUser).child(numberOfMessages + "ma").setValue(insertMessageEt.getText().toString());
+                            firebase.getReference().child("users").child(lastUser).child("question").setValue(askReference.child(lastUser).toString());
+                            firebase.getReference().child("users").child(lastUser).child("quesTime").setValue(timeStemp);
+                        } else {
+                            Toast.makeText(getContext(), "max number of messages reached", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            } else {
+                pickRandomUserFromTheList();
+            }
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+    }
+
+    @Override
+    public void getList(ArrayList<String> list) {
+        users = list;
+        if(users!=null && users.size()>0) {
+            while (pickedUser.equals("") || pickedUser.equals(currentUser)) {
+
+                Random random = new Random();
+                int pick = random.nextInt(users.size());
+                pickedUser = (String) users.get(pick);
+                lastUser = pickedUser;
+            }
+            timeStemp = String.valueOf(System.currentTimeMillis());
+            firebase.getReference().child("users").child(currentUser).child("timeStemp").setValue(timeStemp);
+            firebase.getReference().child("users").child(currentUser).child("lastUser").setValue(lastUser);
 
 
             askReference.child(lastUser).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     numberOfMessages = dataSnapshot.getChildrenCount();
-                    if(numberOfMessages<10) {
-
-                        countBtn.setText(String.valueOf(9-numberOfMessages));
-                        askReference.child(lastUser).child(numberOfMessages + "ma").setValue(insertMessageEt.getText().toString());
-                        firebase.getReference().child("users").child(lastUser).child("question").setValue(askReference.child(lastUser).toString());
-                    }else{
-                        Toast.makeText(getContext(),"max number of messages reached",Toast.LENGTH_SHORT).show();
-                    }
+                    askReference.child(lastUser).child(numberOfMessages + "ma").setValue(insertMessageEt.getText().toString());
+                    countBtn.setText(String.valueOf(9 - numberOfMessages));
+                    firebase.getReference().child("users").child(lastUser).child("question").setValue(askReference.child(lastUser).toString());
+                    firebase.getReference().child("users").child(lastUser).child("quesTime").setValue(timeStemp);
+                    message.fillUpWindowMessage(askReference, currentUser, lastUser, timeStemp, linearLayout, scrollView,AskForAtipFragment.this);
+                    setTimer();
                 }
 
                 @Override
@@ -251,14 +305,10 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
 
                 }
             });
-        } else {
-            pickRandomUserFromTheList();
+        }else{
+            Toast.makeText(getContext(),"no available users right at this moment",Toast.LENGTH_SHORT).show();
         }
-    }
 
-    @Override
-    public void onResume() {
-        super.onResume();
 
     }
 }

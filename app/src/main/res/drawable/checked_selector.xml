@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_pressed="false" >
-        <bitmap android:src="@drawable/check_mark_green_32"></bitmap>
+        <bitmap android:src="@drawable/check_mark_green_32" android:tint="@android:color/black"></bitmap>
 
     </item>
 
     <item android:state_pressed="true" >
-        <bitmap android:src="@drawable/check_mark_green_32" android:tint="@color/colorClicked2"></bitmap>
+        <bitmap android:src="@drawable/check_mark_green_32" android:tint="@android:color/white"></bitmap>
 
     </item>
 

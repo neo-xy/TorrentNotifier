@@ -74,6 +74,9 @@ public class ImdbTab extends Fragment implements View.OnClickListener {
 //TODO contains title räcker inte till "news" inehåller "title" i url också
         if (movieURL.contains("title")) {
             Log.i(TAG, "omovieurl: "+ movieURL);
+            movieURL =movieURL.replace("http://","");
+
+            Log.i(TAG, "omovieurl: "+ movieURL);
             Realm realm = Realm.getDefaultInstance();
             realm.executeTransactionAsync(new Realm.Transaction() {
                 @Override
@@ -90,7 +93,10 @@ public class ImdbTab extends Fragment implements View.OnClickListener {
 
                 @Override
                 public void onSuccess() {
-                    MyListTab myListTab = (MyListTab) getActivity().getSupportFragmentManager().getFragments().get(3);
+                    Log.i(TAG, "onSuccess: "+getActivity().getSupportFragmentManager().getFragments().size());
+
+                    MyListTab myListTab = (MyListTab) getActivity().getSupportFragmentManager().getFragments().get(2);
+
                     myListTab.add();
                     Toast.makeText(getContext(), "Movie Added", Toast.LENGTH_LONG).show();
                 }

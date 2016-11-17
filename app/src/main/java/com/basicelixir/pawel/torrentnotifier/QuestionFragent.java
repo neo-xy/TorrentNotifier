@@ -1,17 +1,22 @@
 package com.basicelixir.pawel.torrentnotifier;
 
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.support.v7.widget.PopupMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -20,6 +25,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by Pawel on 06/10/2016.
@@ -42,7 +51,13 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
     Message message;
     DatabaseReference dr;
     ScrollView scrollView;
-    TextView countTV;
+    TextView countTV, timer;
+    CountDownTimer countDownTimer;
+    String timeStemp;
+    SimpleDateFormat sdf;
+    long g;
+    ImageButton reportButton;
+
 
     @Nullable
     @Override
@@ -51,9 +66,14 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
         sendBtn = (Button) view.findViewById(R.id.ask_for_btn_send2);
 
         sendBtn.setOnClickListener(this);
-        sendBtn.setClickable(false);
+        sendBtn.setEnabled(false);
         scrollView = (ScrollView) view.findViewById(R.id.ask_for_scroll);
         countTV = (TextView) view.findViewById(R.id.tv_count);
+        timer = (TextView)view.findViewById(R.id.stoper_tv);
+        sdf = new SimpleDateFormat("mm:ss");
+        reportButton = (ImageButton)view.findViewById(R.id.ib_report);
+        reportButton.setOnClickListener(this);
+
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseDatabase = FirebaseDatabase.getInstance();
@@ -64,10 +84,14 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
         questionReference.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                if(dataSnapshot.getValue()!=null && dataSnapshot.getKey().equals("quesTime")){
+                    timeStemp = dataSnapshot.getValue().toString();
+                    setTimer();
 
+                }
 
                 if (dataSnapshot.getValue() != null && dataSnapshot.getKey().equals("question")) {
-                    sendBtn.setClickable(true);
+                    sendBtn.setEnabled(true);
                     String url = dataSnapshot.getValue().toString();
 
                     dr = firebaseDatabase.getReferenceFromUrl(url.trim());
@@ -109,16 +133,64 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
             public void onCancelled(DatabaseError databaseError) {
 
             }
-        });
+        }
 
 
+        );
 
         return view;
+    }
+
+    private void setTimer() {
+        g = System.currentTimeMillis() - Long.parseLong(timeStemp);
+        timer.setVisibility(View.VISIBLE);
+        countDownTimer = new CountDownTimer(Message.timeAvailable -g, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+
+                timer.setVisibility(View.VISIBLE);
+                timer.setText(sdf.format(millisUntilFinished));
+            }
+
+            @Override
+            public void onFinish() {
+                timer.setText("");
+                timer.setVisibility(View.GONE);
+                questionReference.child("quesTime").removeValue();
+                sendBtn.setEnabled(false);
+
+            }
+        }.start();
     }
 
 
     @Override
     public void onClick(View v) {
+        if(v.getId() == R.id.ib_report){
+            PopupMenu popupMenu = new PopupMenu(getContext(),v);
+            final Menu menu = popupMenu.getMenu();
+            popupMenu.getMenuInflater().inflate(R.menu.report_menu,menu);
+            popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    if(item==menu.findItem(R.id.report_item)){
+                        LinearLayout ll = message.getConversation();
+                        int t =ll.getChildCount();
+                        ArrayList<String> textMessages = new ArrayList<String>();
+                        for (int i = 0; i < ll.getChildCount(); i++) {
+                            TextView mess = (TextView)ll.getChildAt(i);
+                            textMessages.add(mess.getText().toString());
+
+                        }
+                        ReportedMessage rm = new ReportedMessage(textMessages,currentUser, userWithTheQusetion, new Date().getTime(),"question");
+                        firebaseDatabase.getReference().child("Reported").push().setValue(rm);
+                        Toast.makeText(getContext(),"User Reported",Toast.LENGTH_LONG).show();
+                    }
+                    return true;
+                }
+            });
+            popupMenu.show();
+        }
         if (v == view.findViewById(R.id.ask_for_btn_send2)) {
             insertedText = inserMessageEt.getText().toString();
 
@@ -130,7 +202,6 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
                     count = dataSnapshot.getChildrenCount();
                     if (count < 10) {
                         countTV.setText(String.valueOf(9 - count));
-                        Log.i(TAG, "onDataChange: jjjjj");
                         dr.child(count + "mb").setValue(insertedText);
                     }
 
@@ -141,6 +212,7 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
 
                 }
             });
+
 
 
         }

@@ -1,6 +1,7 @@
 package com.basicelixir.pawel.torrentnotifier;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -28,24 +29,16 @@ public class Message {
     ArrayList<String> listOfUsers;
     String TAG = "pawell";
     ScrollView scrollView;
+    static long timeAvailable =100000;
+    ListListener listListener;
+    LinearLayout.LayoutParams lp;
+
 
     public Message(Context context) {
         this.context = context;
 
-        listOfUsers = new ArrayList<>();
-        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-        firebaseDatabase.getReference().child("users").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for (DataSnapshot d : dataSnapshot.getChildren()) {
-                    listOfUsers.add(d.getKey());
-                }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
+
     }
 
     public void fillUpQuestionWindow(DatabaseReference questionReference, String userID, Context context, final LinearLayout linearLayout, ScrollView scrollView) {
@@ -53,6 +46,8 @@ public class Message {
         this.userId = userID;
         this.linearLayout = linearLayout;
         this.scrollView = scrollView;
+
+
 
         questionReference.addValueEventListener(new ValueEventListener() {
             @Override
@@ -70,20 +65,10 @@ public class Message {
 
     }
 
-    private void clearWindow() {
-
-        linearLayout.removeAllViews();
-
-        for (int i = 0; i < linearLayout.getChildCount(); i++) {
-
-        }
-
-    }
-
     private void addConversationToAsk(DataSnapshot dataSnapshot) {
         TextView textView;
 
-        LinearLayout.LayoutParams lp;
+
         for (DataSnapshot d : dataSnapshot.getChildren()) {
             if (d.getKey().contains("ma")) {
                 lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -118,8 +103,6 @@ public class Message {
                 textView.setLayoutParams(lp);
                 linearLayout.addView(textView);
                 linearLayout.setFocusable(true);
-
-
             }
 
             scrollView.fullScroll(ViewGroup.FOCUS_DOWN);
@@ -127,17 +110,36 @@ public class Message {
 
     }
 
-    public boolean getTimeOut() {
-        return timeOut;
+    public void getListOfUSers(AskForAtipFragment askForAtipFragment) {
+        listListener = (ListListener)askForAtipFragment;
+        listOfUsers = new ArrayList<>();
+        Log.i(TAG, "getListOfUSers: "+userId);
+        final FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+        firebaseDatabase.getReference().child("users").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+                for (DataSnapshot d : dataSnapshot.getChildren()) {
+
+                    Log.i(TAG, "onDataChange: "+d.getKey());
+                        if (d.child("quesTime").getValue() == null && d.child("eligebleForChat").getValue(Boolean.class) == true) {
+                            listOfUsers.add(d.getKey());
+                        } else {
+                        }
+                }
+                listListener.getList(listOfUsers);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+
+        });
+
+
     }
 
-    public ArrayList<String> getListOfUSers() {
-
-
-        return listOfUsers;
-    }
-
-    public void fillUpWindowMessage(DatabaseReference askReference, String userId, String lastUser, String timeStemp, final LinearLayout linearLayout, ScrollView scrollView) {
+    public void fillUpWindowMessage(DatabaseReference askReference, String userId, String lastUser, String timeStemp, final LinearLayout linearLayout, ScrollView scrollView,AskForAtipFragment ask) {
         this.linearLayout = linearLayout;
         this.lastUserId = lastUser;
         this.userId = userId;
@@ -148,7 +150,6 @@ public class Message {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 linearLayout.removeAllViews();
                 addConversationToAsk(dataSnapshot);
-
             }
 
             @Override
@@ -159,4 +160,7 @@ public class Message {
 
     }
 
+    public LinearLayout getConversation() {
+        return linearLayout;
+    }
 }
