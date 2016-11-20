@@ -34,7 +34,7 @@ public class ChatDialog extends DialogFragment implements View.OnClickListener {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-    vi = inflater.inflate(R.layout.message_dialog, container, false);
+    vi = inflater.inflate(R.layout.dialog_chat, container, false);
 
         vi.setOnClickListener(this);
         int widthOfPhone = getActivity().getWindow().getWindowManager().getDefaultDisplay().getWidth();

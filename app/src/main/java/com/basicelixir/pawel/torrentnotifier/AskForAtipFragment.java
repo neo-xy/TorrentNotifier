@@ -79,7 +79,7 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.ask_for, container, false);
+        view = inflater.inflate(R.layout.fragment_ask_for, container, false);
         insertMessageEt = (EditText) view.findViewById(R.id.ask_for_et_insert_message);
         sendBtn = (Button) view.findViewById(R.id.ask_for_btn_send2);
         sendBtn.setOnClickListener(this);

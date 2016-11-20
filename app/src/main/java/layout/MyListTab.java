@@ -2,7 +2,6 @@ package layout;
 
 
 import android.os.Bundle;
-import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -37,7 +36,7 @@ public class MyListTab extends Fragment implements View.OnClickListener {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.my_list_tab, container, false);
+        View view = inflater.inflate(R.layout.fragment_my_list_tab, container, false);
 
         deleteBtn = (Button) view.findViewById(R.id.deleteBtn);
         deleteBtn.setOnClickListener(this);

@@ -42,7 +42,7 @@ public class ImdbTab extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
 
 
-        View view = inflater.inflate(R.layout.imdb_tab, container, false);
+        View view = inflater.inflate(R.layout.fragment_imdb_tab, container, false);
 
         webView = (WebView) view.findViewById(R.id.webView);
         webView.loadUrl("http://www.imdb.com/");

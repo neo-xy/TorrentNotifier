@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     HomeTab homeTab;
     boolean isInForeground = true;
     Button btnChat, btnChatNotis;
-    View messageLayout, loggInLayout, createLayout;
+    View messageLayout, createLayout;
     FirebaseAuth firebaseauth;
     FirebaseAuth.AuthStateListener authListener;
     DatabaseReference dbReference;
@@ -63,12 +63,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         AppEventsLogger.activateApp(this);
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.myTooolbar);
-        //
 
         setSupportActionBar(toolbar);
         LayoutInflater inflater = getLayoutInflater();
-        messageLayout = inflater.inflate(R.layout.message_dialog, null);
-        createLayout = inflater.inflate(R.layout.create_dialog, null);
+        messageLayout = inflater.inflate(R.layout.dialog_chat, null);
+        createLayout = inflater.inflate(R.layout.dialog_log_in, null);
 
         btnChat = (Button) findViewById(R.id.btn_chat);
         btnChat.setOnClickListener(this);
@@ -120,21 +119,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         Intent intent = new Intent(this, NottifiactionService.class);
         intent.putExtra("reciver", rr);
-       // startService(intent);
+        // startService(intent);
 
         PendingIntent pendingIntent = PendingIntent.getService(this, 100, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             long time = Calendar.getInstance().getTimeInMillis();
-             //alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,time,10000,pendingIntent);
-           // alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 1000, 5000, pendingIntent);
-
+            //alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,time,10000,pendingIntent);
+            // alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 1000, 5000, pendingIntent);
 
 
         } else {
             Log.i(TAG, "else");
         }
 
-      Intent intent1 = new Intent(this,FirebaseBackgroundService.class);
+        Intent intent1 = new Intent(this, FirebaseBackgroundService.class);
         this.startService(intent1);
 
 
@@ -149,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         tableLayout.setupWithViewPager(viewPager);
         if (firebaseauth.getCurrentUser() != null) {
-            
+
             checkForMessages(firebaseauth.getCurrentUser().getUid(), dbReference);
         }
 
@@ -247,7 +245,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onStop() {
         super.onStop();
-        if(authListener!=null) {
+        if (authListener != null) {
             firebaseauth.removeAuthStateListener(authListener);
         }
     }

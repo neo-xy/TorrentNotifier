@@ -32,7 +32,7 @@ public class JustAddedAdapter extends RecyclerView.Adapter<JustAddedAdapter.MyVi
 
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = layoutInflater.inflate(R.layout.just_added_line, parent, false);
+        View view = layoutInflater.inflate(R.layout.row_just_added, parent, false);
         MyViewHolder myViewHolder = new MyViewHolder(view);
         return myViewHolder;
     }

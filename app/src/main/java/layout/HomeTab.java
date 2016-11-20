@@ -2,7 +2,6 @@ package layout;
 
 
 import android.content.Intent;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,12 +10,10 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -37,20 +34,19 @@ import io.realm.RealmResults;
 
 public class HomeTab extends Fragment implements View.OnClickListener, View.OnGenericMotionListener {
 
-    Rect movieTipRect;
-    ImageButton  informationBtn;
-    TextView titleAdded, top5header, tipHeader, movieTip, tipInf;
-    TextView textView1, textView2, textView3, textView4, textView5;
-    ImageView addView1, addView2, addView3, addView4, addView5;
-    ImageView linkView1, linkView2, linkView3, linkView4, linkView5;
-    String imdb1, imdb2, imdb3, imdb4, imdb5;
-    String TAG = "pawell";
-    RecyclerView recyclerView;
-    Realm realm;
-    AlertDialog alertDialog;
-    View view,view2;
-    RealmResults<Movie> results;
-    JustAddedAdapter justAddedAdapter;
+    ImageButton btnTip;
+   private TextView titleAdded, top5header, tipHeader, tvTipTitle;
+   private TextView textView1, textView2, textView3, textView4, textView5;
+   private ImageView addView1, addView2, addView3, addView4, addView5;
+    private ImageView linkView1, linkView2, linkView3, linkView4, linkView5;
+    private String imdb1, imdb2, imdb3, imdb4, imdb5, tipLink;
+    private String TAG = "pawell";
+    private RecyclerView recyclerView;
+    private  Realm realm;
+    private AlertDialog alertDialog;
+    private View view,view2;
+    private RealmResults<Movie> results;
+    private JustAddedAdapter justAddedAdapter;
     RealmChangeListener callback = new RealmChangeListener() {
         @Override
         public void onChange(Object element) {
@@ -58,7 +54,7 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
             justAddedAdapter.update(results);
         }
     };
-    DatabaseReference rootRef = FirebaseDatabase.getInstance().getReference();
+    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
 
     public HomeTab() {
         // Required empty public constructor
@@ -67,18 +63,21 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.home_tab, container, false);
+        view = inflater.inflate(R.layout.fragment_home_tab, container, false);
+        btnTip = (ImageButton)view.findViewById(R.id.ib_tip_link);
+        tvTipTitle = (TextView)view.findViewById(R.id.tv_tip_title);
+
         findViews(view);
         Typeface typeface = Typeface.createFromAsset(getContext().getAssets(), "fonts/ubuntu.ttf");
         titleAdded.setTypeface(typeface);
-        movieTip.setTypeface(typeface);
+
         textView1.setTypeface(typeface);
         textView2.setTypeface(typeface);
         textView3.setTypeface(typeface);
         textView4.setTypeface(typeface);
         textView5.setTypeface(typeface);
 
-        informationBtn.setOnClickListener(this);
+        btnTip.setOnClickListener(this);
 
         realm = Realm.getDefaultInstance();
         updateAvailableTorrents();
@@ -90,9 +89,8 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
                 .inflate(R.layout.information_dialog_layout, null);
         alertDialog = new AlertDialog.Builder(getContext(), R.style.ert).create();
         alertDialog.setView(view2);
-        tipInf = (TextView)view2.findViewById(R.id.inf_text);
 
-        rootRef.child("top5").addChildEventListener(new ChildEventListener() {
+        databaseReference.child("top5").addChildEventListener(new ChildEventListener() {
 
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -116,6 +114,44 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
             public void onCancelled(DatabaseError databaseError) {
             }
         });
+        databaseReference.child("tip").addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+               switch (dataSnapshot.getKey()){
+                   case "link":
+                       tipLink =dataSnapshot.getValue().toString();
+                       break;
+                   case "title":
+                       tvTipTitle.setText(dataSnapshot.getValue().toString());
+                       break;
+                   default:
+                       break;
+
+               }
+
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
 
 
         return view;
@@ -155,12 +191,7 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
             case "imdb5":
                 imdb5 = dataSnapshot.getValue(String.class);
                 break;
-            case "movieTipOfTheDay":
-                movieTip.setText(dataSnapshot.getValue(String.class));
-                break;
-            case "tipInfo":
-                tipInf.setText(dataSnapshot.getValue(String.class));
-                break;
+
             default:
 
                 break;
@@ -236,37 +267,13 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
             case R.id.delete_button:
                 break;
 
-            case R.id.information_IB:
-                hendleInformationClick();
-                break;
-
-
+            case R.id.ib_tip_link:
+               openLink(tipLink);
         }
 
     }
 
-    private void hendleInformationClick() {
 
-        Rect homeTabRect = new Rect();
-        view.getGlobalVisibleRect(homeTabRect);
-
-        movieTipRect = new Rect();
-        movieTip.getGlobalVisibleRect(movieTipRect);
-
-
-        alertDialog.show();
-
-
-        int px = (getResources().getDisplayMetrics().widthPixels);
-        double g = px / 1.5;
-        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
-        lp.copyFrom(alertDialog.getWindow().getAttributes());
-        lp.width = (int)( px / 1.5);
-        lp.gravity = Gravity.BOTTOM | Gravity.RIGHT;
-        lp.y=homeTabRect.bottom-movieTipRect.top;
-        alertDialog.getWindow().setAttributes(lp);
-
-    }
 
 
     private void openLink(String imdbLink) {
@@ -329,9 +336,7 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
         textView5 = (TextView) view.findViewById(R.id.nr5);
 
         top5header = (TextView) view.findViewById(R.id.top_5_header);
-        tipHeader = (TextView) view.findViewById(R.id.kill_time_header_TV);
-        movieTip = (TextView) view.findViewById(R.id.movie_tip_TV);
-        informationBtn = (ImageButton) view.findViewById(R.id.information_IB);
+        tipHeader = (TextView) view.findViewById(R.id.tv_kill_time_header);
 
 
         linkView1 = (ImageView) view.findViewById(R.id.link1);

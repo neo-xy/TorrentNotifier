@@ -52,7 +52,7 @@ public class CreateDialog extends DialogFragment  {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.create_dialog, container, false);
+        view = inflater.inflate(R.layout.dialog_log_in, container, false);
         faceBookBtn = (LoginButton) view.findViewById(R.id.faceBook_login_button);
         fireBaseAuth = FirebaseAuth.getInstance();
         callbackManager = CallbackManager.Factory.create();
