@@ -1,10 +1,14 @@
 <resources>
-    <string name="app_name">Torrent Notifier</string>
+    <string name="app_name">torrent notifier</string>
     <string name="facebook_app_id">455484061302536</string>
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="prompt">g</string>
+    <string name="tipOf">Movie Tip of The Day</string>
+    <string name="most_pop">Most popular right now</string>
+    <string name="number_of_mesg_left">messages left: 10</string>
 
+    <string name="hintMessage">action,comedy, max 5 years old... </string>
     <string-array name="country_arrays">
         <item>Malaysia</item>
         <item>United States</item>

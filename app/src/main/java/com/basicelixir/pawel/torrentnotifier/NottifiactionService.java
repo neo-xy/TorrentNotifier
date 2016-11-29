@@ -14,13 +14,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import br.com.goncalves.pugnotification.notification.PugNotification;
-import io.realm.Realm;
-import io.realm.RealmQuery;
-import io.realm.RealmResults;
 
 /**
  * Created by Pawel on 23/09/2016.
@@ -32,13 +31,12 @@ public class NottifiactionService extends IntentService {
     ArrayList<NewTorrentMovies> newTorrentMovies;
     ArrayList<Movie> moviesAvailable;
     String[] camExcetions = {".CAM.", "CAMRip", "HDCAM", "HD-TC", ".CAM-", "HD-TS"};
+    FirebaseAuth firebaseAuth;
+    FirebaseDatabase firebaseDatabase;
+    ArrayList<Movie> movieList;
 
     Context context;
     android.support.v4.os.ResultReceiver rr;
-    Realm realm;
-    String movieSaved = "";
-    String torrentName;
-    Realm realm2 = null;
     boolean contains;
 
     public NottifiactionService() {
@@ -46,15 +44,17 @@ public class NottifiactionService extends IntentService {
         Log.i(TAG, "NottifiactionService: ");
         moviesAvailable = new ArrayList<Movie>();
         context = this;
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseDatabase = FirebaseDatabase.getInstance();
+
 
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        rr = (android.support.v4.os.ResultReceiver)intent.getParcelableExtra("reciver");
+        rr = (android.support.v4.os.ResultReceiver) intent.getParcelableExtra("reciver");
 
 
-        
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -68,65 +68,49 @@ public class NottifiactionService extends IntentService {
                 try {
                     newTorrentMovies = torrent.execute().get();
                     newTorrentMovies = checkForCam(newTorrentMovies);
-                    realm = Realm.getDefaultInstance();
-                    RealmQuery query = realm.where(Movie.class);
-                    query.equalTo("availableForDownload", false);
-                    RealmResults<Movie> movieRealmResults = query.findAll();
+                    movieList =new ArrayList<Movie>();
 
-                    for (int i = 0; i < movieRealmResults.size(); i++) {
-                        movieSaved = movieRealmResults.get(i).getMovieURL();
-                        for (int j = 0; j < newTorrentMovies.size(); j++) {
-                            if (newTorrentMovies.get(j).getImdbUrl().contains(movieSaved)) {
-                                torrentName = newTorrentMovies.get(j).getFulltorrentName();
-                                realm.executeTransaction(new Realm.Transaction() {
-                                    @Override
-                                    public void execute(Realm realm) {
-                                        //TODO instead of findFIrs change to findAll in case someone put the same movie twive in his list
-                                        Movie movie = realm.where(Movie.class).equalTo("movieURL", movieSaved)
-                                                .equalTo("availableForDownload", false)
-                                                .findFirst();
-                                        if (movie != null) {
-                                            movie.setTorrentFullName(torrentName);
-                                            movie.setAvailableForDownload(true);
+                    if(firebaseAuth.getCurrentUser()!=null){
+                        firebaseDatabase.getReference().child("users").child(firebaseAuth.getCurrentUser().getUid()).child("movieList").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
 
-                                            realm2 = Realm.getDefaultInstance();
-                                            RealmResults<Movie> moviesToShowResult = realm2.where(Movie.class).notEqualTo("torrentFullName", "null")
-                                                    .equalTo("availableForDownload", true)
-                                                    .findAll();
-
-                                            fireNotification(moviesToShowResult);
+                                for(DataSnapshot d:dataSnapshot.getChildren()){
+                                    Movie movie = new Movie();
+                                    boolean available=false;
+                                    movie.setTitle(d.getKey().toString());
+                                    for(DataSnapshot d2 :d.getChildren()) {
+                                        if (d2.getKey().equals("url")) {
+                                            movie.setMovieURL(d2.getValue().toString());
+                                        }else if( d2.getKey().equals("available")){
+                                            available = d2.getValue(Boolean.class);
+                                            movie.setAvailableForDownload(d2.getValue(Boolean.class));
                                         }
-                                        FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child("question").addListenerForSingleValueEvent(new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                                if(dataSnapshot.getValue()==null){
-                                                    Log.i(TAG, "onDataChange: nulll");
-                                                }else
-                                                    Log.i(TAG, "onDataChange: elllse");
-                                            }
-
-                                            @Override
-                                            public void onCancelled(DatabaseError databaseError) {
-
-                                            }
-                                        });
                                     }
-                                });
+                                    if(available==false){
+                                        movieList.add(movie);
+                                    }
+
+                                }
+
+                                compareTorrentsWithMovieList( movieList, newTorrentMovies);
                             }
-                        }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
                     }
+
+
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 } finally {
-                    if (realm != null) {
-                        realm.close();
-                    }
-                    if (realm2 != null) {
-                        realm2.close();
-                    }
+
                 }
             }
         }).start();
@@ -134,43 +118,82 @@ public class NottifiactionService extends IntentService {
 
     }
 
+    private void compareTorrentsWithMovieList(ArrayList<Movie> movieList, ArrayList<NewTorrentMovies> newTorrentMovies) {
+        Log.i(TAG, "compareTorrentsWithMovieList: ");
+        ArrayList<Movie> moviesAvailable = new ArrayList<>();
+        for (int i = 0; i < movieList.size(); i++) {
+            for (int j = 0; j <newTorrentMovies.size() ; j++) {
+               if( newTorrentMovies.get(j).getImdbUrl().contains(movieList.get(i).getMovieURL())){
+
+                   movieList.get(i).setTorrentFullName(newTorrentMovies.get(j).getFulltorrentName());
+                   moviesAvailable.add(movieList.get(i));
+               }
+            }
+        }
+
+        //not allows duppicates -ta bort upprepade filmer
+        Set<Movie> hs = new HashSet<>();
+        hs.addAll(moviesAvailable);
+        moviesAvailable.clear();
+        moviesAvailable.addAll(hs);
+
+        fireNotification(moviesAvailable);
+
+        for (int i = 0; i < moviesAvailable.size(); i++) {
+            firebaseDatabase.getReference().child("users").child(firebaseAuth.getCurrentUser().getUid()).child("movieList").child(moviesAvailable.get(i).getTitle()).child("available").setValue(true);
+            moviesAvailable.get(i).setAvailableForDownload(true);
+        }
+        Log.i(TAG, "compareTorrentsWithMovieList: moviesavailable "+ moviesAvailable.size());
+
+        Log.i(TAG, "compareTorrentsWithMovieList: movieList "+ movieList.size());
+        Log.i(TAG, "compareTorrentsWithMovieList: newtorrents "+ newTorrentMovies.size());
+    }
+
     private ArrayList<NewTorrentMovies> checkForCam(ArrayList<NewTorrentMovies> newTorrentMovies) {
         ArrayList<NewTorrentMovies> nt = new ArrayList<>();
         for (int i = 0; i < newTorrentMovies.size(); i++) {
 
-                if(containsCam(newTorrentMovies.get(i).getFulltorrentName().toLowerCase())==false){
-                    nt.add(newTorrentMovies.get(i));
-                }
+            if (containsCam(newTorrentMovies.get(i).getFulltorrentName().toLowerCase()) == false) {
+                nt.add(newTorrentMovies.get(i));
+            }
 
         }
         return nt;
     }
-    public boolean containsCam(String torrentName){
-        contains=false;
-        for (int i = 0; i <camExcetions.length ; i++) {
-           if( torrentName.contains(camExcetions[i].toLowerCase())){
-                contains=true;
+
+    public boolean containsCam(String torrentName) {
+        contains = false;
+        for (int i = 0; i < camExcetions.length; i++) {
+            if (torrentName.contains(camExcetions[i].toLowerCase())) {
+                contains = true;
             }
         }
 
         return contains;
     }
 
-    public void fireNotification(RealmResults<Movie> moviesToShow) {
+    public void fireNotification(ArrayList<Movie> moviesToShow) {
         Log.i(TAG, "fireNotification: ");
+        ArrayList<String> titles =new  ArrayList<>();
         if (moviesToShow != null && moviesToShow.size() > 0) {
+            for (int j = 0; j < moviesToShow.size(); j++) {
+                titles.add(moviesToShow.get(j).getTorrentFullName());
+            }
+            Bundle bundle = new Bundle();
+
+            bundle.putStringArrayList("titles",titles);
+           // bundle.putString("torrent", fullTorrentName);
+            rr.send(1, bundle);
+
             for (int i = 0; i < moviesToShow.size(); i++) {
-                String fullTorrentName = moviesToShow.get(i).getTorrentFullName();
+                String fullTorrentName = moviesToShow.get(i).getTitle();
 
-                Bundle bundle = new Bundle();
 
-                bundle.putString("torrent", fullTorrentName);
-                rr.send(1, bundle);
                 int t = new Random().nextInt(Integer.MAX_VALUE);
                 PugNotification.with(context)
                         .load()
                         .smallIcon(R.mipmap.ic_launcher)
-                        .title("Torrent Notifier")
+                        .title("Your movie just got available")
                         .identifier(t)
                         .bigTextStyle(fullTorrentName)
                         .click(MainActivity.class)

@@ -1,6 +1,7 @@
 package com.basicelixir.pawel.torrentnotifier;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
@@ -16,37 +17,25 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 
-/**
- * Created by Pawel on 09/10/2016.
- */
-
 public class Message {
-    String userId;
-    Context context;
-    LinearLayout linearLayout;
-    boolean timeOut;
-    String lastUserId;
-    ArrayList<String> listOfUsers;
+    private String userId;
+    private Context context;
+    private LinearLayout linearLayout;
+    private ArrayList<String> listOfUsers;
     String TAG = "pawell";
-    ScrollView scrollView;
-    static long timeAvailable =100000;
-    ListListener listListener;
-    LinearLayout.LayoutParams lp;
-
+    private ScrollView scrollView;
+    static long timeAvailable = 100000;
+    private ListListener listListener;
 
     public Message(Context context) {
         this.context = context;
-
-
-
     }
 
-    public void fillUpQuestionWindow(DatabaseReference questionReference, String userID, Context context, final LinearLayout linearLayout, ScrollView scrollView) {
+     void fillUpQuestionWindow(DatabaseReference questionReference, String userID, Context context, final LinearLayout linearLayout, ScrollView scrollView) {
         this.context = context;
         this.userId = userID;
         this.linearLayout = linearLayout;
         this.scrollView = scrollView;
-
 
 
         questionReference.addValueEventListener(new ValueEventListener() {
@@ -54,24 +43,20 @@ public class Message {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 linearLayout.removeAllViews();
                 addConversationToAsk(dataSnapshot);
-
             }
-
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
             }
         });
-
     }
 
     private void addConversationToAsk(DataSnapshot dataSnapshot) {
         TextView textView;
 
-
         for (DataSnapshot d : dataSnapshot.getChildren()) {
             if (d.getKey().contains("ma")) {
-                lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
                 textView = new TextView(context);
                 textView.setText(d.getValue(String.class));
 
@@ -81,23 +66,23 @@ public class Message {
                 textView.setBackgroundResource(R.drawable.message_cloud_bg);
 
                 //TODO look if context.getresources works
-                textView.getBackground().setTint(context.getResources().getColor(R.color.colorClicked2));
+                textView.getBackground().setTint(context.getResources().getColor(R.color.darkGray));
+                textView.setTextColor(Color.WHITE);
                 textView.setPadding(40, 15, 15, 15);
                 linearLayout.addView(textView);
 
 
-
             }
             if (d.getKey().contains("mb")) {
-                lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
                 textView = new TextView(context);
                 textView.setText(d.getValue().toString());
                 lp.setMargins(150, 10, 20, 10);
                 textView.setGravity(Gravity.RIGHT);
 
-                textView.setTextColor(context.getResources().getColor(R.color.colorPrimaryDark2));
+                textView.setTextColor(context.getResources().getColor(R.color.darkGray));
                 textView.setBackgroundResource(R.drawable.message_cloud_bg);
-                textView.getBackground().setTint(context.getResources().getColor(R.color.colorAccent2));
+                textView.getBackground().setTint(Color.WHITE);
                 int b = textView.getPaddingBottom();
                 textView.setPadding(15, 15, 40, 15);
                 textView.setLayoutParams(lp);
@@ -110,10 +95,9 @@ public class Message {
 
     }
 
-    public void getListOfUSers(AskForAtipFragment askForAtipFragment) {
-        listListener = (ListListener)askForAtipFragment;
+     void getListOfUSers(AskForAtipFragment askForAtipFragment) {
+        listListener = askForAtipFragment;
         listOfUsers = new ArrayList<>();
-        Log.i(TAG, "getListOfUSers: "+userId);
         final FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
         firebaseDatabase.getReference().child("users").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -121,11 +105,9 @@ public class Message {
 
                 for (DataSnapshot d : dataSnapshot.getChildren()) {
 
-                    Log.i(TAG, "onDataChange: "+d.getKey());
-                        if (d.child("quesTime").getValue() == null && d.child("eligebleForChat").getValue(Boolean.class) == true) {
-                            listOfUsers.add(d.getKey());
-                        } else {
-                        }
+                    if (d.child("quesTime").getValue() == null && d.child("eligebleForChat").getValue(Boolean.class)) {
+                        listOfUsers.add(d.getKey());
+                    }
                 }
                 listListener.getList(listOfUsers);
             }
@@ -133,15 +115,11 @@ public class Message {
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }
-
         });
-
-
     }
 
-    public void fillUpWindowMessage(DatabaseReference askReference, String userId, String lastUser, String timeStemp, final LinearLayout linearLayout, ScrollView scrollView,AskForAtipFragment ask) {
+    public void fillUpWindowMessage(DatabaseReference askReference, String userId, String lastUser, String timeStemp, final LinearLayout linearLayout, ScrollView scrollView, AskForAtipFragment ask) {
         this.linearLayout = linearLayout;
-        this.lastUserId = lastUser;
         this.userId = userId;
         this.scrollView = scrollView;
 
@@ -157,10 +135,9 @@ public class Message {
 
             }
         });
-
     }
 
-    public LinearLayout getConversation() {
+     LinearLayout getConversation() {
         return linearLayout;
     }
 }

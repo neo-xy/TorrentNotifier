@@ -6,13 +6,13 @@ import io.realm.annotations.PrimaryKey;
 /**
  * Created by Pawel on 19/05/2016.
  */
-public class Movie extends RealmObject {
+public class Movie {
     String title;
     @PrimaryKey
-   private String movieURL;
-   boolean availableForDownload;
-    boolean activated;
-    String torrentFullName;
+    private String movieURL;
+    private boolean availableForDownload;
+    private boolean activated;
+    private String torrentFullName;
 
 
     public boolean isActivated() {
@@ -23,11 +23,11 @@ public class Movie extends RealmObject {
         this.activated = activated;
     }
 
-    public String getTorrentFullName() {
+     String getTorrentFullName() {
         return torrentFullName;
     }
 
-    public void setTorrentFullName(String torrentFullName) {
+     void setTorrentFullName(String torrentFullName) {
         this.torrentFullName = torrentFullName;
     }
 
@@ -39,7 +39,7 @@ public class Movie extends RealmObject {
         this.title = title;
     }
 
-    public String getMovieURL() {
+     String getMovieURL() {
         return movieURL;
     }
 
@@ -54,4 +54,6 @@ public class Movie extends RealmObject {
     public void setAvailableForDownload(boolean availableForDownload) {
         this.availableForDownload = availableForDownload;
     }
+
+
 }

@@ -5,10 +5,10 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -17,13 +17,19 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.Switch;
+import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DecodeFormat;
+import com.bumptech.glide.request.target.Target;
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
 import com.google.firebase.auth.FirebaseAuth;
@@ -43,69 +49,84 @@ import layout.MyListTab;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, FacebookLogOutListener {
     String TAG = "pawell";
-    private ArrayList<Fragment> fragmentList;
-    TabLayout tableLayout;
-    MyResultReciver rr;
-    HomeTab homeTab;
-    boolean isInForeground = true;
-    Button btnChat, btnChatNotis;
-    View messageLayout, createLayout;
-    FirebaseAuth firebaseauth;
-    FirebaseAuth.AuthStateListener authListener;
-    DatabaseReference dbReference;
-    Toolbar toolbar;
+    private HomeTab homeTab;
+    private boolean isInForeground = true;
+    private FirebaseAuth firebaseauth;
+    private FirebaseAuth.AuthStateListener authListener;
+    private String currentUser;
+    private Switch notificationSwitch;
+    Intent messageIntent;
+    private Boolean notificationAllowed;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+
+            notificationAllowed = (Boolean) this.getSharedPreferences("notificationAllowed",MODE_PRIVATE).getBoolean("notificationAllowed",true);
+        
+
         FacebookSdk.sdkInitialize(getApplicationContext());
         AppEventsLogger.activateApp(this);
         setContentView(R.layout.activity_main);
-        toolbar = (Toolbar) findViewById(R.id.myTooolbar);
 
+        Toolbar toolbar = (Toolbar) findViewById(R.id.myTooolbar);
         setSupportActionBar(toolbar);
-        LayoutInflater inflater = getLayoutInflater();
-        messageLayout = inflater.inflate(R.layout.dialog_chat, null);
-        createLayout = inflater.inflate(R.layout.dialog_log_in, null);
 
-        btnChat = (Button) findViewById(R.id.btn_chat);
-        btnChat.setOnClickListener(this);
-        btnChatNotis = (Button) findViewById(R.id.btn_chat_notis);
+        messageIntent = new Intent(this, FirebaseBackgroundService.class);
+        this.startService(messageIntent);
 
+        notificationSwitch = (Switch) findViewById(R.id.switch_view);
+        notificationSwitch.setChecked(notificationAllowed);
+
+        notificationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                Log.i(TAG, "onCheckedChanged: " + b);
+                if (b) {
+
+                    notificationAllowed=true;
+                    getApplication().startService(messageIntent);
+                    Toast.makeText(getBaseContext(), "'Question' notifications are turn ON", Toast.LENGTH_SHORT)
+                            .show();
+                }else{
+                    notificationAllowed=false;
+                    getApplication().stopService(messageIntent);
+                    Toast.makeText(getBaseContext(), "'Question' notifications are turn OFF", Toast.LENGTH_SHORT)
+                            .show();
+                }
+            }
+        });
 
         firebaseauth = FirebaseAuth.getInstance();
-
-        dbReference = FirebaseDatabase.getInstance().getReference();
-
+        DatabaseReference dbReference = FirebaseDatabase.getInstance().getReference();
 
         authListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
 
-                FirebaseUser fireUser = firebaseAuth.getCurrentUser();
+                FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
 
-
-                if (fireUser != null) {
-
-                    btnChat.setEnabled(true);
-                    btnChat.getBackground().setTint(Color.WHITE);
+                if (firebaseUser != null) {
+                    currentUser = firebaseUser.getUid();
                 }
-                if (fireUser == null) {
-                    btnChat.setEnabled(false);
-                    btnChat.getBackground().setTintList(null);
-                } else {
+                if (firebaseUser == null) {
                 }
             }
         };
 
 
-        Typeface typeface = Typeface.createFromAsset(getApplicationContext().getAssets(), "fonts/ubuntu.ttf");
         ViewPager viewPager = (ViewPager) findViewById(R.id.my_pager);
         ImageView background = (ImageView) findViewById(R.id.background);
-//        Glide.with(this)
-//                .load(R.drawable.bg3)
-//                .into(background);
+        Glide.with(this)
+                .load(R.drawable.tnbg)
+                .asBitmap()
+                .format(DecodeFormat.PREFER_ARGB_8888)
+                .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+                .into(background);
+
 
 //        Intent serviceintent =new Intent(this, FirebaseBackgroundService.class);
 //        PendingIntent pendingintent =PendingIntent.getService(this,0, serviceintent,0);
@@ -113,84 +134,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //        alarm.cancel(pendingintent);
 //        alarm.setRepeating(AlarmManager.RTC_WAKEUP,System.currentTimeMillis(),5000, pendingintent);
 
-        tableLayout = (TabLayout) findViewById(R.id.my_tab);
-        rr = new MyResultReciver(null);
+        TabLayout tableLayout = (TabLayout) findViewById(R.id.my_tab);
+        MyResultReciver rr = new MyResultReciver(null);
         this.getSupportFragmentManager();
         AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
         Intent intent = new Intent(this, NottifiactionService.class);
         intent.putExtra("reciver", rr);
-        // startService(intent);
-
+        startService(intent);
+//tylkok to potrzebne a moze nawet nie moze  wystarczy tylko "startService" -check it
         PendingIntent pendingIntent = PendingIntent.getService(this, 100, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             long time = Calendar.getInstance().getTimeInMillis();
+            //te dwa nie chyba
             //alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,time,10000,pendingIntent);
-            // alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 1000, 5000, pendingIntent);
-
-
-        } else {
-            Log.i(TAG, "else");
+            alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 5000, 120000, pendingIntent);
         }
 
-        Intent intent1 = new Intent(this, FirebaseBackgroundService.class);
-        this.startService(intent1);
-
-
         homeTab = new HomeTab();
-        fragmentList = new ArrayList<Fragment>();
-        fragmentList.add((Fragment) homeTab);
-        fragmentList.add((Fragment) new ImdbTab());
-        fragmentList.add((Fragment) new MyListTab());
+        ArrayList<Fragment> fragmentList = new ArrayList<Fragment>();
+        fragmentList.add(homeTab);
+        fragmentList.add(new ImdbTab());
+        fragmentList.add(new MyListTab());
 
         MyPagerAdapter myPagerAdapter = new MyPagerAdapter(getSupportFragmentManager(), fragmentList);
         viewPager.setAdapter(myPagerAdapter);
 
         tableLayout.setupWithViewPager(viewPager);
-        if (firebaseauth.getCurrentUser() != null) {
-
-            checkForMessages(firebaseauth.getCurrentUser().getUid(), dbReference);
-        }
 
     }
 
-    private void checkForMessages(String uid, DatabaseReference dbReference) {
-
-        dbReference.child("users").child(uid).child("question").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (dataSnapshot.getValue() != null) {
-                    btnChatNotis.setText("1");
-                    btnChatNotis.setVisibility(View.VISIBLE);
-                } else {
-                    btnChatNotis.setVisibility(View.GONE);
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-        {
-        }
-
-    }
 
     @Override
     public void onClick(View v) {
 
-
-        if (v == findViewById(R.id.btn_chat)) {
-
-            ChatDialog chatDialog = new ChatDialog();
-            chatDialog.show(getSupportFragmentManager(), "rt");
-
-        }
     }
 
     @Override
     public void logOutListener(boolean isSignedOut) {
-        btnChat.setEnabled(false);
         firebaseauth.signOut();
 
     }
@@ -198,27 +178,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @SuppressLint("ParcelCreator")
     public class MyResultReciver extends ResultReceiver {
-        public MyResultReciver(Handler handler) {
+        MyResultReciver(Handler handler) {
             super(handler);
         }
 
         @Override
-        protected void onReceiveResult(int resultCode, Bundle resultData) {
+        protected void onReceiveResult(int resultCode, final Bundle resultData) {
             super.onReceiveResult(resultCode, resultData);
-            Log.i(TAG, "onReceiveResult: ");
-//              if (resultCode == 1) {
-//                torrentName = (String) resultData.get("torrent");
+            if (resultCode == 1) {
+                // Log.i(TAG, "onReceiveResult:11 " + resultData.get("titles").toString());
+
+//              torrentName = (String) resultData.get("torrent");
 //                imdbURl = (String) resultData.get("url");
 
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
 
-                    if (isInForeground == true) {
-                        homeTab.updateAvailableTorrents();
+                        //  if (isInForeground == true) {
+                        homeTab.updateAvailableTorrents((ArrayList<String>) resultData.get("titles"));
+                        // }
                     }
-                }
-            });
+                });
+            }
         }
     }
 
@@ -248,6 +230,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (authListener != null) {
             firebaseauth.removeAuthStateListener(authListener);
         }
+        Log.i(TAG, "onStop: ");
+        getSharedPreferences("notificationAllowed",MODE_PRIVATE).edit().putBoolean("notificationAllowed",notificationAllowed).commit();
     }
 
     @Override
@@ -261,17 +245,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         switch (item.getItemId()) {
             case R.id.menu_create:
-
                 CreateDialog createDialog = new CreateDialog();
                 createDialog.show(getSupportFragmentManager(), "rr");
-
                 break;
 
             default:
                 break;
         }
-
         return super.onOptionsItemSelected(item);
     }
+
+    public String getCurrentUser() {
+        return currentUser;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "onDestroy: "+notificationSwitch.isChecked());
+
+    }
+
+
+
+
 
 }

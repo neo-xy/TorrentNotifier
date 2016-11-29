@@ -18,6 +18,5 @@ public class MyApplication extends Application {
                 .build();
 
         Realm.setDefaultConfiguration(realmConfiguration);
-
     }
 }

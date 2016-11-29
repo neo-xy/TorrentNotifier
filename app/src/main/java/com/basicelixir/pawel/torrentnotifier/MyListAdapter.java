@@ -25,21 +25,22 @@ import io.realm.RealmResults;
  */
 public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.MyHolder> {
     static String TAG = "pawell";
+    private ArrayList<Movie> movieList;
+    private LayoutInflater layoutInflater;
+    private Context context;
+    private Button deleteBTn;
+    private ArrayList<String> itemToErase;
 
-    RealmResults<Movie> results;
-    LayoutInflater layoutInflater;
-     ArrayList<Integer> itemToErase;
-    Button deleteBTn;
-    Context context;
-    HashMap <Integer, Integer> rt = new HashMap<>();
+    public MyListAdapter(ArrayList<Movie> movieList, Context context, Button deleteBtn) {
 
-
-    public MyListAdapter(RealmResults<Movie> results, Context context,Button button) {
-        deleteBTn = button;
+        this.deleteBTn = deleteBtn;
+        this.movieList = movieList;
         this.context = context;
         layoutInflater = LayoutInflater.from(context);
         itemToErase = new ArrayList<>();
-        this.results = results;
+        if (movieList.size() < 1) {
+            deleteBTn.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -51,73 +52,71 @@ public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.MyHolder> 
 
     @Override
     public void onBindViewHolder(MyHolder holder, int position) {
-if(results.get(position).isActivated()==false){
-    holder.textView.setTextColor(Color.GREEN);
-}
-        holder.textView.setText(results.get(position).getTitle());
+        holder.textView.setText(movieList.get(position).getTitle());
         holder.checkBox.setChecked(false);
+       if(movieList.get(position).isAvailableForDownload()){
+           holder.availableTv.setText("AVAILABLE");
+           holder.availableTv.setTextColor(context.getResources().getColor(R.color.colorAccent));
+       }else{
+           holder.availableTv.setText("NOT AVAILABLE");
+       }
     }
 
     @Override
     public int getItemCount() {
-        return results.size();
-
+        return movieList.size();
     }
 
-    public void update(RealmResults newResults) {
-        results = newResults;
-        itemToErase.clear();
+    public ArrayList<String> getItemsToDelete() {
+
+        movieList.clear();
         notifyDataSetChanged();
-    }
 
-    public ArrayList<Integer> getItemsToDelete() {
-
-        for(Integer t :rt.values()){
-            Log.i(TAG, "getItemsToDelete: "+t);
-            itemToErase.add(t);
-        }
         return itemToErase;
     }
 
 
-    class MyHolder extends RecyclerView.ViewHolder implements CompoundButton.OnCheckedChangeListener, View.OnClickListener {
-
-        TextView textView;
+    public class MyHolder extends RecyclerView.ViewHolder implements CompoundButton.OnCheckedChangeListener, View.OnClickListener {
+        TextView textView, availableTv;
         CheckBox checkBox;
         ImageButton imageButton;
 
         public MyHolder(View itemView) {
             super(itemView);
+
+            availableTv = (TextView)itemView.findViewById(R.id.availableTv);
             textView = (TextView) itemView.findViewById(R.id.textView);
             checkBox = (CheckBox) itemView.findViewById(R.id.checkBox);
-            imageButton =(ImageButton)itemView.findViewById(R.id.imageButton);
+            imageButton = (ImageButton) itemView.findViewById(R.id.imageButton);
             imageButton.setOnClickListener(this);
             checkBox.setOnCheckedChangeListener(this);
+
         }
 
-
         @Override
-        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+            int position = getAdapterPosition();
 
             if (isChecked) {
-                int position = getAdapterPosition();
-                rt.put(position,position);
-            }else if(isChecked==false){
-                rt.remove(getAdapterPosition());
+                itemToErase.add(movieList.get(position).getTitle());
+            } else if (isChecked == false) {
+                itemToErase.remove(movieList.get(position).getTitle());
             }
 
-            if(rt.size()>0){
+            if (itemToErase.size() > 0) {
                 deleteBTn.setVisibility(View.VISIBLE);
-            }else{
+            } else {
                 deleteBTn.setVisibility(View.GONE);
             }
         }
 
         @Override
-        public void onClick(View v) {
-           String url = "http://www."+results.get(getAdapterPosition()).getMovieURL();
+        public void onClick(View view) {
+
+            String url = "http://www." + movieList.get(getAdapterPosition()).getMovieURL();
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             context.startActivity(intent);
+
         }
     }
 }

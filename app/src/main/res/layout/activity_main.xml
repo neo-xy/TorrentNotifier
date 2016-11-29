@@ -5,12 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#b8b6b6"
+
     tools:context="com.basicelixir.pawel.torrentnotifier.MainActivity">
 
-    <include
-        android:id="@+id/myTooolbar"
-        layout="@layout/toolbar"></include>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -22,15 +19,19 @@
             android:layout_height="match_parent"
             android:scaleType="fitXY" />
 
+        <include
+            android:id="@+id/myTooolbar"
+            layout="@layout/toolbar" />
 
         <android.support.design.widget.TabLayout
             android:id="@+id/my_tab"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-
-            android:background="#3a3939"
-            app:tabSelectedTextColor="#FFD700"
-            app:tabTextColor="@android:color/white"></android.support.design.widget.TabLayout>
+            android:layout_below="@id/myTooolbar"
+            android:background="@android:color/transparent"
+            app:tabSelectedTextColor="@color/colorAccent"
+            app:tabTextAppearance="@style/tabItems"
+            app:tabTextColor="@android:color/white" />
 
         <android.support.v4.view.ViewPager
             android:id="@+id/my_pager"
@@ -40,7 +41,6 @@
             android:layout_below="@+id/my_tab">
 
         </android.support.v4.view.ViewPager>
-
 
     </RelativeLayout>
 </LinearLayout>

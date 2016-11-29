@@ -6,17 +6,33 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:actionMenuTextAppearance">@style/menuItemStyle</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+
 
     </style>
-    <style name="AppTheme2" parent="Theme.AppCompat.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary2</item>
-    <item name="colorPrimaryDark">@color/colorPrimaryDark2</item>
-    <item name="colorAccent">@color/colorAccent2</item>
 
+    <style name="menuItemStyle">
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:textSize">20sp</item>
     </style>
+    <style name="tabItems">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="LightText" parent="AppTheme">
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:textSize">25sp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
 
     <style name="ert" parent="android:Theme.Dialog">
-<item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:padding">0dp</item>
     </style>
 

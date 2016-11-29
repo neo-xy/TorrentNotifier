@@ -2,6 +2,7 @@ package layout;
 
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -14,6 +15,9 @@ import android.widget.Toast;
 
 import com.basicelixir.pawel.torrentnotifier.Movie;
 import com.basicelixir.pawel.torrentnotifier.R;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 
 import io.realm.Realm;
 
@@ -22,9 +26,16 @@ import io.realm.Realm;
  */
 public class ImdbTab extends Fragment implements View.OnClickListener {
 
-    WebView webView;
     String TAG = "pawell";
-    String movieURL;
+
+    private WebView webView;
+    private String movieURL;
+    private String title;
+    private String currentUser;
+
+    private FirebaseAuth.AuthStateListener authStateListener;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseDatabase firebaseDatabase;
 
     public ImdbTab() {
     }
@@ -32,17 +43,31 @@ public class ImdbTab extends Fragment implements View.OnClickListener {
     @Override
     public void setTargetFragment(Fragment fragment, int requestCode) {
         super.setTargetFragment(fragment, requestCode);
-
-
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-
         View view = inflater.inflate(R.layout.fragment_imdb_tab, container, false);
+
+        final FloatingActionButton floatingActionButton = (FloatingActionButton) view.findViewById(R.id.myfab);
+        floatingActionButton.setVisibility(View.VISIBLE);
+        floatingActionButton.setOnClickListener(this);
+
+        firebaseDatabase = FirebaseDatabase.getInstance();
+        firebaseAuth = FirebaseAuth.getInstance();
+        authStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+
+                if (firebaseAuth.getCurrentUser() != null) {
+                    floatingActionButton.setEnabled(true);
+                    currentUser = firebaseAuth.getCurrentUser().getUid();
+                } else {
+                    floatingActionButton.setEnabled(false);
+                }
+            }
+        };
 
         webView = (WebView) view.findViewById(R.id.webView);
         webView.loadUrl("http://www.imdb.com/");
@@ -53,10 +78,7 @@ public class ImdbTab extends Fragment implements View.OnClickListener {
                 return true;
             }
         });
-        // webView.getSettings().setJavaScriptEnabled(true);
-        FloatingActionButton floatingActionButton = (FloatingActionButton) view.findViewById(R.id.myfab);
-        floatingActionButton.setVisibility(View.VISIBLE);
-        floatingActionButton.setOnClickListener(this);
+
         return view;
     }
 
@@ -66,52 +88,36 @@ public class ImdbTab extends Fragment implements View.OnClickListener {
         //TODO title returns swedish title ex stjärnornas krig
         String webTitle = webView.getTitle();
         int s = webTitle.length();
-        final String title = webTitle.substring(0, s - 7);
-         movieURL = webView.getUrl();
-        if(movieURL.contains("m.")==true){
-            movieURL = movieURL.replace("m.","");
+        title = webTitle.substring(0, s - 7);
+        movieURL = webView.getUrl();
+        if (movieURL.contains("m.") == true) {
+            movieURL = movieURL.replace("m.", "");
         }
 //TODO contains title räcker inte till "news" inehåller "title" i url också
         if (movieURL.contains("title")) {
-            Log.i(TAG, "omovieurl: "+ movieURL);
-            movieURL =movieURL.replace("http://","");
-
-            Log.i(TAG, "omovieurl: "+ movieURL);
-            Realm realm = Realm.getDefaultInstance();
-            realm.executeTransactionAsync(new Realm.Transaction() {
-                @Override
-                public void execute(Realm realm) {
-                    Movie movie = new Movie();
-                    movie.setMovieURL(movieURL);
-                    movie.setTitle(title);
-                    movie.setAvailableForDownload(false);
-                    movie.setActivated(true);
-                    realm.copyToRealm(movie);
-
-                }
-            }, new Realm.Transaction.OnSuccess() {
-
-                @Override
-                public void onSuccess() {
-                    Log.i(TAG, "onSuccess: "+getActivity().getSupportFragmentManager().getFragments().size());
-
-                    MyListTab myListTab = (MyListTab) getActivity().getSupportFragmentManager().getFragments().get(2);
-
-                    myListTab.add();
-                    Toast.makeText(getContext(), "Movie Added", Toast.LENGTH_LONG).show();
-                }
-            }, new Realm.Transaction.OnError() {
-                @Override
-                public void onError(Throwable error) {
-                    Log.i(TAG, "onError: " + error);
-                    //TODO var mer exact vilken error innan Toast
-                    Toast.makeText(getContext(), "Movie allready in Your List", Toast.LENGTH_LONG).show();
-                }
-            });
-        } else {
-            Log.i(TAG, "else");
-            Toast.makeText(getContext(), "No Movie choosed", Toast.LENGTH_LONG).show();
+            movieURL = movieURL.replace("http://", "");
         }
 
+        firebaseDatabase.getReference().child("users").child(currentUser).child("movieList").child(title).child("url").setValue(movieURL);
+        firebaseDatabase.getReference().child("users").child(currentUser).child("movieList").child(title).child("available").setValue(false).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Toast.makeText(getContext(), "Movie Added to your List", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        firebaseAuth.addAuthStateListener(authStateListener);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (authStateListener != null) {
+            firebaseAuth.addAuthStateListener(authStateListener);
+        }
     }
 }

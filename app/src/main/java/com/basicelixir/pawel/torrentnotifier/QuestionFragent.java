@@ -1,5 +1,6 @@
 package com.basicelixir.pawel.torrentnotifier;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
@@ -67,6 +68,10 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
 
         sendBtn.setOnClickListener(this);
         sendBtn.setEnabled(false);
+        if(!sendBtn.isEnabled()){
+            sendBtn.setTextColor(getResources().getColor(R.color.lightGray));
+        }
+
         scrollView = (ScrollView) view.findViewById(R.id.ask_for_scroll);
         countTV = (TextView) view.findViewById(R.id.tv_count);
         timer = (TextView)view.findViewById(R.id.stoper_tv);
@@ -92,6 +97,7 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
 
                 if (dataSnapshot.getValue() != null && dataSnapshot.getKey().equals("question")) {
                     sendBtn.setEnabled(true);
+                    sendBtn.setTextColor(getResources().getColor(R.color.colorAccent));
                     String url = dataSnapshot.getValue().toString();
 
                     dr = firebaseDatabase.getReferenceFromUrl(url.trim());
@@ -112,27 +118,14 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
                     message.fillUpQuestionWindow(dr, currentUser, getContext(), linearLayout, scrollView);
                 }
             }
-
             @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-
-            }
-
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
             @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
+            public void onChildRemoved(DataSnapshot dataSnapshot) {}
             @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
+            public void onCancelled(DatabaseError databaseError) {}
         }
 
 

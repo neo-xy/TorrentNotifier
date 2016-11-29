@@ -5,56 +5,58 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.basicelixir.pawel.torrentnotifier.JustAddedAdapter;
-import com.basicelixir.pawel.torrentnotifier.Movie;
+import com.basicelixir.pawel.torrentnotifier.MainActivity;
 import com.basicelixir.pawel.torrentnotifier.R;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import io.realm.Realm;
-import io.realm.RealmChangeListener;
-import io.realm.RealmResults;
 
-public class HomeTab extends Fragment implements View.OnClickListener, View.OnGenericMotionListener {
+import java.util.ArrayList;
 
-    ImageButton btnTip;
-   private TextView titleAdded, top5header, tipHeader, tvTipTitle;
-   private TextView textView1, textView2, textView3, textView4, textView5;
-   private ImageView addView1, addView2, addView3, addView4, addView5;
+import static android.widget.Toast.LENGTH_SHORT;
+
+public class HomeTab extends Fragment implements View.OnClickListener {
+
+
+    private View view;
+    private ImageButton btnTip;
+    private TextView  tvTipTitle;
+    private TextView textView1, textView2, textView3, textView4, textView5;
+    private ImageView addView1, addView2, addView3, addView4, addView5;
     private ImageView linkView1, linkView2, linkView3, linkView4, linkView5;
+    TextView newMessageIcon;
+
     private String imdb1, imdb2, imdb3, imdb4, imdb5, tipLink;
     private String TAG = "pawell";
-    private RecyclerView recyclerView;
-    private  Realm realm;
-    private AlertDialog alertDialog;
-    private View view,view2;
-    private RealmResults<Movie> results;
-    private JustAddedAdapter justAddedAdapter;
-    RealmChangeListener callback = new RealmChangeListener() {
-        @Override
-        public void onChange(Object element) {
 
-            justAddedAdapter.update(results);
-        }
-    };
-    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+    private FirebaseAuth.AuthStateListener authListener;
+    private FirebaseAuth firebaseAuth;
+    private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
+    private FloatingActionButton fbtn;
+    private ImageButton chatBtn;
 
     public HomeTab() {
         // Required empty public constructor
@@ -64,12 +66,37 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_home_tab, container, false);
-        btnTip = (ImageButton)view.findViewById(R.id.ib_tip_link);
-        tvTipTitle = (TextView)view.findViewById(R.id.tv_tip_title);
+
+        if(savedInstanceState==null){
+        }else{
+        }
+        firebaseAuth = FirebaseAuth.getInstance();
+
+        authListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                if (firebaseAuth.getCurrentUser() != null) {
+                    addView1.setEnabled(true);
+                    addView2.setEnabled(true);
+                    addView3.setEnabled(true);
+                    addView4.setEnabled(true);
+                    addView5.setEnabled(true);
+                } else {
+                    addView1.setEnabled(false);
+                    addView2.setEnabled(false);
+                    addView3.setEnabled(false);
+                    addView4.setEnabled(false);
+                    addView5.setEnabled(false);
+                }
+            }
+        };
+        btnTip = (ImageButton) view.findViewById(R.id.ib_tip_link);
+        tvTipTitle = (TextView) view.findViewById(R.id.tv_tip_title);
+        newMessageIcon = (TextView)view.findViewById(R.id.btn_chat_notis2);
+        chatBtn = (ImageButton)view.findViewById(R.id.fbtn_chat);
 
         findViews(view);
         Typeface typeface = Typeface.createFromAsset(getContext().getAssets(), "fonts/ubuntu.ttf");
-        titleAdded.setTypeface(typeface);
 
         textView1.setTypeface(typeface);
         textView2.setTypeface(typeface);
@@ -78,17 +105,6 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
         textView5.setTypeface(typeface);
 
         btnTip.setOnClickListener(this);
-
-        realm = Realm.getDefaultInstance();
-        updateAvailableTorrents();
-        justAddedAdapter = new JustAddedAdapter(results, getActivity());
-
-        recyclerView.setAdapter(justAddedAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        view2 = LayoutInflater.from(getContext())
-                .inflate(R.layout.information_dialog_layout, null);
-        alertDialog = new AlertDialog.Builder(getContext(), R.style.ert).create();
-        alertDialog.setView(view2);
 
         databaseReference.child("top5").addChildEventListener(new ChildEventListener() {
 
@@ -117,18 +133,16 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
         databaseReference.child("tip").addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-               switch (dataSnapshot.getKey()){
-                   case "link":
-                       tipLink =dataSnapshot.getValue().toString();
-                       break;
-                   case "title":
-                       tvTipTitle.setText(dataSnapshot.getValue().toString());
-                       break;
-                   default:
-                       break;
-
-               }
-
+                switch (dataSnapshot.getKey()) {
+                    case "link":
+                        tipLink = dataSnapshot.getValue().toString();
+                        break;
+                    case "title":
+                        tvTipTitle.setText(dataSnapshot.getValue().toString());
+                        break;
+                    default:
+                        break;
+                }
             }
 
             @Override
@@ -148,16 +162,34 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
             }
         });
 
+        if (firebaseAuth.getCurrentUser() != null) {
 
+            checkForMessages(firebaseAuth.getCurrentUser().getUid(), databaseReference);
+        }
 
         return view;
     }
 
+    private void checkForMessages(String uid, DatabaseReference databaseReference) {
 
+        databaseReference.child("users").child(uid).child("question").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.getValue() != null) {
+                    setMessageIcon();
+                } else {
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
 
     private void setTop5(DataSnapshot dataSnapshot) {
         switch (dataSnapshot.getKey()) {
@@ -191,63 +223,30 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
             case "imdb5":
                 imdb5 = dataSnapshot.getValue(String.class);
                 break;
-
             default:
-
                 break;
         }
     }
 
-    public void updateAvailableTorrents() {
-        results = realm.where(Movie.class)
-                .notEqualTo("torrentFullName", "null")
-                .equalTo("availableForDownload", true)
-                .equalTo("activated", true)
-                .findAll();
-        if (results.size() > 0) {
-            recyclerView.setVisibility(View.VISIBLE);
-            titleAdded.setVisibility(View.VISIBLE);
-        }
-        results.addChangeListener(callback);
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        results = realm.where(Movie.class)
-                .notEqualTo("torrentFullName", "null")
-                .equalTo("availableForDownload", true)
-                .findAll();
-        if (results.size() > 0) {
-            recyclerView.setVisibility(View.VISIBLE);
-        }
-        results.addChangeListener(callback);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        realm.removeAllChangeListeners();
-    }
 
     @Override
     public void onClick(View v) {
         int id = v.getId();
         switch (id) {
             case R.id.add1:
-                addToRealm(imdb1, (String) textView1.getText());
+                addMovieToDatabase(imdb1, textView1.getText().toString());
                 break;
             case R.id.add2:
-                addToRealm(imdb2, (String) textView2.getText());
+                addMovieToDatabase(imdb1, textView2.getText().toString());
                 break;
             case R.id.add3:
-                addToRealm(imdb3, (String) textView3.getText());
+                addMovieToDatabase(imdb1, textView3.getText().toString());
                 break;
             case R.id.add4:
-                addToRealm(imdb4, (String) textView4.getText());
+                addMovieToDatabase(imdb1, textView4.getText().toString());
                 break;
             case R.id.add5:
-                addToRealm(imdb5, (String) textView5.getText());
+                addMovieToDatabase(imdb1, textView5.getText().toString());
                 break;
             case R.id.link1:
                 openLink(imdb1);
@@ -266,15 +265,14 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
                 break;
             case R.id.delete_button:
                 break;
-
             case R.id.ib_tip_link:
-               openLink(tipLink);
+                openLink(tipLink);
+                break;
+            default:
+
+                break;
         }
-
     }
-
-
-
 
     private void openLink(String imdbLink) {
         imdbLink = "http://www." + imdbLink;
@@ -284,60 +282,25 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
         } catch (Exception e) {
             Toast.makeText(getContext(), "Not Available at the moment", Toast.LENGTH_LONG).show();
         }
-
     }
 
-    private void addToRealm(final String url, final String title) {
-        Realm realm2 = Realm.getDefaultInstance();
-        realm2.executeTransactionAsync(new Realm.Transaction() {
+    private void addMovieToDatabase(String imdbUrl, String title) {
+        databaseReference.child("users").child(((MainActivity) getActivity()).getCurrentUser()).child("movieList").child(title).child("url").setValue(imdbUrl);
+        databaseReference.child("users").child(firebaseAuth.getCurrentUser().getUid()).child("movieList").child(title).child("available").setValue(false).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
-            public void execute(Realm realm) {
-                Movie movie = new Movie();
-                movie.setTitle(title);
-                movie.setMovieURL(url);
-                movie.setAvailableForDownload(false);
-                movie.setActivated(true);
-                realm.copyToRealm(movie);
-            }
-        }, new Realm.Transaction.OnSuccess() {
-
-            @Override
-            public void onSuccess() {
-                //TODO find fragmnets with tags
-                int numberOfFragments = getActivity().getSupportFragmentManager().getFragments().size();
-                MyListTab myListTab = (MyListTab) getActivity().getSupportFragmentManager().getFragments().get(numberOfFragments - 1);
-
-                myListTab.add();
-                Toast.makeText(getContext(), "Movie Added", Toast.LENGTH_LONG).show();
-
-            }
-        }, new Realm.Transaction.OnError() {
-            @Override
-            public void onError(Throwable error) {
-                Log.i(TAG, "onError: " + error);
-                //TODO var mer exact vilken error innan Toast
-                Toast.makeText(getContext(), "Movie allready in Your List", Toast.LENGTH_LONG).show();
-
+            public void onSuccess(Void aVoid) {
+                Toast.makeText(getActivity(),"Movie added to Your List", LENGTH_SHORT).show();
             }
         });
-        realm2.close();
     }
-
 
     private void findViews(View view) {
 
-        recyclerView = (RecyclerView) view.findViewById(R.id.rec_new_torrents);
-
-        titleAdded = (TextView) view.findViewById(R.id.title_added);
         textView1 = (TextView) view.findViewById(R.id.nr1);
         textView2 = (TextView) view.findViewById(R.id.nr2);
         textView3 = (TextView) view.findViewById(R.id.nr3);
         textView4 = (TextView) view.findViewById(R.id.nr4);
         textView5 = (TextView) view.findViewById(R.id.nr5);
-
-        top5header = (TextView) view.findViewById(R.id.top_5_header);
-        tipHeader = (TextView) view.findViewById(R.id.tv_kill_time_header);
-
 
         linkView1 = (ImageView) view.findViewById(R.id.link1);
         linkView2 = (ImageView) view.findViewById(R.id.link2);
@@ -363,16 +326,35 @@ public class HomeTab extends Fragment implements View.OnClickListener, View.OnGe
         addView4.setOnClickListener(this);
         addView5.setOnClickListener(this);
 
+        chatBtn.setOnClickListener((View.OnClickListener)getActivity());
+    }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        firebaseAuth.addAuthStateListener(authListener);
     }
 
     @Override
-    public boolean onGenericMotion(View v, MotionEvent event) {
-
-        Log.i(TAG, "onGenericMotion: " + event.getAxisValue(MotionEvent.AXIS_Y));
-        return false;
+    public void onStop() {
+        super.onStop();
+        if (authListener != null) {
+            firebaseAuth.removeAuthStateListener(authListener);
+        }
     }
 
-    public void setTitleAddedToGone() {
-        titleAdded.setVisibility(View.GONE);
+    public void updateAvailableTorrents(ArrayList<String> torrent) {
+
+        RecyclerView rc = (RecyclerView) view.findViewById(R.id.rec_new_torrents);
+
+        JustAddedAdapter justAddedAdapter = new JustAddedAdapter(torrent, getContext(), rc);
+        rc.setLayoutManager(new LinearLayoutManager(getContext()));
+        rc.setAdapter(justAddedAdapter);
+        rc.setVisibility(View.VISIBLE);
+    }
+    public void setMessageIcon(){
+        newMessageIcon.setVisibility(View.VISIBLE);
+        newMessageIcon.setText("1");
     }
 }

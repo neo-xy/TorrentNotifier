@@ -11,7 +11,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
@@ -28,26 +27,18 @@ import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 
-/**
- * Created by Pawel on 01/10/2016.
- */
-
-public class CreateDialog extends DialogFragment  {
+public class CreateDialog extends DialogFragment {
 
     String TAG = "pawell";
-    FirebaseAuth fireBaseAuth;
-    View view;
-    CallbackManager callbackManager;
-    LoginButton faceBookBtn;
-    FirebaseDatabase firebaseDatabase;
-    AccessTokenTracker accessTokenTracker;
-    FacebookLogOutListener faceBookLogOutLisetener;
-    Button g;
-    SharedPreferences sharedPreferences;
-    Context context;
-    static boolean ALLREADY_CREATED;
-
-
+    private FirebaseAuth fireBaseAuth;
+    private View view;
+    private CallbackManager callbackManager;
+    private LoginButton faceBookBtn;
+    private FirebaseDatabase firebaseDatabase;
+    private AccessTokenTracker accessTokenTracker;
+    private FacebookLogOutListener faceBookLogOutLisetener;
+    private SharedPreferences sharedPreferences;
+    private Context context;
 
     @Nullable
     @Override
@@ -57,10 +48,7 @@ public class CreateDialog extends DialogFragment  {
         fireBaseAuth = FirebaseAuth.getInstance();
         callbackManager = CallbackManager.Factory.create();
         firebaseDatabase = FirebaseDatabase.getInstance();
-
-
         faceBookLogOutLisetener = (MainActivity) getActivity();
-
 
         faceBookBtn.setReadPermissions("email", "public_profile");
         faceBookBtn.setFragment(this);
@@ -68,7 +56,6 @@ public class CreateDialog extends DialogFragment  {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 handelFacebookAccesToken(loginResult.getAccessToken());
-
             }
 
             @Override
@@ -86,14 +73,11 @@ public class CreateDialog extends DialogFragment  {
                 if (currentAccessToken == null) {
                     fireBaseAuth.signOut();
                     faceBookLogOutLisetener.logOutListener(true);
-
                 }
                 dismiss();
                 CreateDialog.this.dismiss();
             }
         };
-
-
         return view;
     }
 
@@ -110,25 +94,23 @@ public class CreateDialog extends DialogFragment  {
         fireBaseAuth.signInWithCredential(credentials).addOnCompleteListener(this.getActivity(), new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-                sharedPreferences = context.getSharedPreferences("prefTorrentNot", context.MODE_PRIVATE);
-                if (sharedPreferences.getBoolean("ALLREADY_CREATED", false) == false) {
-                    sharedPreferences.edit().putBoolean("ALLREADY_CREATED", true).commit();
+                sharedPreferences = context.getSharedPreferences("prefTorrentNot", Context.MODE_PRIVATE);
+                if (!sharedPreferences.getBoolean("ALLREADY_CREATED", false)) {
+                    sharedPreferences.edit().putBoolean("ALLREADY_CREATED", true).apply();
                     Log.i(TAG, "onComplete: " + task.isSuccessful());
                     firebaseDatabase.getReference().child("users").child(task.getResult().getUser().getUid()).child("ble").setValue("ble");
                     firebaseDatabase.getReference().child("list").child(task.getResult().getUser().getUid()).child("email").setValue(task.getResult().getUser().getEmail());
                     firebaseDatabase.getReference().child("users").child(task.getResult().getUser().getUid()).child("eligebleForChat").setValue(true);
-
                 }
             }
         });
-
     }
 
-        @Override
-        public void onActivityResult ( int requestCode, int resultCode, Intent data){
-            super.onActivityResult(requestCode, resultCode, data);
-            callbackManager.onActivityResult(requestCode, resultCode, data);
-        }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
+    }
 
     @Override
     public void onAttach(Context context) {
