@@ -84,7 +84,7 @@ public class ImdbTab extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-
+        if (webView.getUrl().contains("title")) {
         //TODO title returns swedish title ex stjärnornas krig
         String webTitle = webView.getTitle();
         int s = webTitle.length();
@@ -94,17 +94,20 @@ public class ImdbTab extends Fragment implements View.OnClickListener {
             movieURL = movieURL.replace("m.", "");
         }
 //TODO contains title räcker inte till "news" inehåller "title" i url också
-        if (movieURL.contains("title")) {
-            movieURL = movieURL.replace("http://", "");
-        }
 
-        firebaseDatabase.getReference().child("users").child(currentUser).child("movieList").child(title).child("url").setValue(movieURL);
-        firebaseDatabase.getReference().child("users").child(currentUser).child("movieList").child(title).child("available").setValue(false).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Toast.makeText(getContext(), "Movie Added to your List", Toast.LENGTH_SHORT).show();
-            }
-        });
+            movieURL = movieURL.replace("http://", "");
+
+
+            firebaseDatabase.getReference().child("users").child(currentUser).child("movieList").child(title).child("url").setValue(movieURL);
+            firebaseDatabase.getReference().child("users").child(currentUser).child("movieList").child(title).child("available").setValue(false).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Toast.makeText(getContext(), "Movie Added to your List", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }else{
+            Toast.makeText(getContext(),"Not registered as Movie",Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override

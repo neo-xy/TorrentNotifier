@@ -8,7 +8,7 @@
     <string name="most_pop">Most popular right now</string>
     <string name="number_of_mesg_left">messages left: 10</string>
 
-    <string name="hintMessage">action,comedy, max 5 years old... </string>
+    <string name="hintMessage">action,comedy,2010s, max 5 years old... </string>
     <string-array name="country_arrays">
         <item>Malaysia</item>
         <item>United States</item>

@@ -27,7 +27,7 @@ import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 
-public class CreateDialog extends DialogFragment {
+public class FacebookLogginDialog extends DialogFragment {
 
     String TAG = "pawell";
     private FirebaseAuth fireBaseAuth;
@@ -75,7 +75,7 @@ public class CreateDialog extends DialogFragment {
                     faceBookLogOutLisetener.logOutListener(true);
                 }
                 dismiss();
-                CreateDialog.this.dismiss();
+                FacebookLogginDialog.this.dismiss();
             }
         };
         return view;

@@ -31,13 +31,12 @@
             </intent-filter>
         </service>
         <service
-            android:name="com.basicelixir.pawel.torrentnotifier.NottifiactionService"
-            android:enabled="true">
+            android:name=".NottifiactionService"
+            android:exported="false">
 
         </service>
         <service
             android:name=".FirebaseBackgroundService"
-
             android:exported="false" />
 
     </application>

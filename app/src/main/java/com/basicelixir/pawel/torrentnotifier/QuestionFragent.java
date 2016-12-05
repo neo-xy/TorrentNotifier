@@ -127,8 +127,6 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
             @Override
             public void onCancelled(DatabaseError databaseError) {}
         }
-
-
         );
 
         return view;

@@ -3,11 +3,13 @@ package com.basicelixir.pawel.torrentnotifier;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.util.Log;
 
 import java.util.ArrayList;
 
 
 class ChataAdapter extends FragmentStatePagerAdapter {
+    String TAG="pawell";
     private ArrayList<Fragment> chatFragmnets;
 
     private String[] titleOfChatTabs = {"Ask for a Tip", "Question asked"};
@@ -24,6 +26,9 @@ class ChataAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
+        if(chatFragmnets==null){
+            Log.i(TAG, "getCount: null");
+        }
         return chatFragmnets.size();
     }
 
@@ -33,6 +38,8 @@ class ChataAdapter extends FragmentStatePagerAdapter {
     }
 
     void setFragments(ArrayList<Fragment> fragments) {
+        Log.i(TAG, "setFragments: ssss");
+        Log.i(TAG, "setFragments: iiii "+fragments.size());
         chatFragmnets = fragments;
     }
 

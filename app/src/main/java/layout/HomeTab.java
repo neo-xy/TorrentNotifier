@@ -6,6 +6,7 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
@@ -21,8 +22,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.basicelixir.pawel.torrentnotifier.ChatDialog;
 import com.basicelixir.pawel.torrentnotifier.JustAddedAdapter;
 import com.basicelixir.pawel.torrentnotifier.MainActivity;
+import com.basicelixir.pawel.torrentnotifier.NottifiactionService;
 import com.basicelixir.pawel.torrentnotifier.R;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -35,7 +38,9 @@ import com.google.firebase.database.ValueEventListener;
 
 
 import java.util.ArrayList;
+import java.util.Set;
 
+import static android.content.Context.MODE_PRIVATE;
 import static android.widget.Toast.LENGTH_SHORT;
 
 public class HomeTab extends Fragment implements View.OnClickListener {
@@ -55,8 +60,8 @@ public class HomeTab extends Fragment implements View.OnClickListener {
     private FirebaseAuth.AuthStateListener authListener;
     private FirebaseAuth firebaseAuth;
     private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
-    private FloatingActionButton fbtn;
     private ImageButton chatBtn;
+    ChatDialog chatDialog;
 
     public HomeTab() {
         // Required empty public constructor
@@ -67,33 +72,17 @@ public class HomeTab extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_home_tab, container, false);
 
+        chatDialog = new ChatDialog();
+
         if(savedInstanceState==null){
         }else{
         }
         firebaseAuth = FirebaseAuth.getInstance();
 
-        authListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                if (firebaseAuth.getCurrentUser() != null) {
-                    addView1.setEnabled(true);
-                    addView2.setEnabled(true);
-                    addView3.setEnabled(true);
-                    addView4.setEnabled(true);
-                    addView5.setEnabled(true);
-                } else {
-                    addView1.setEnabled(false);
-                    addView2.setEnabled(false);
-                    addView3.setEnabled(false);
-                    addView4.setEnabled(false);
-                    addView5.setEnabled(false);
-                }
-            }
-        };
         btnTip = (ImageButton) view.findViewById(R.id.ib_tip_link);
         tvTipTitle = (TextView) view.findViewById(R.id.tv_tip_title);
         newMessageIcon = (TextView)view.findViewById(R.id.btn_chat_notis2);
-        chatBtn = (ImageButton)view.findViewById(R.id.fbtn_chat);
+      
 
         findViews(view);
         Typeface typeface = Typeface.createFromAsset(getContext().getAssets(), "fonts/ubuntu.ttf");
@@ -180,7 +169,6 @@ public class HomeTab extends Fragment implements View.OnClickListener {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() != null) {
                     setMessageIcon();
-                } else {
                 }
             }
 
@@ -231,6 +219,7 @@ public class HomeTab extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+        if(firebaseAuth.getCurrentUser()!=null){
         int id = v.getId();
         switch (id) {
             case R.id.add1:
@@ -268,9 +257,14 @@ public class HomeTab extends Fragment implements View.OnClickListener {
             case R.id.ib_tip_link:
                 openLink(tipLink);
                 break;
+
             default:
 
                 break;
+        }
+
+            }else{
+            Toast.makeText(getContext(),"Log In to Usa this Fucnction",LENGTH_SHORT).show();
         }
     }
 
@@ -326,26 +320,28 @@ public class HomeTab extends Fragment implements View.OnClickListener {
         addView4.setOnClickListener(this);
         addView5.setOnClickListener(this);
 
-        chatBtn.setOnClickListener((View.OnClickListener)getActivity());
-    }
 
+        chatBtn =(ImageButton)view.findViewById(R.id.ibtnchat);
+        chatBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                chatDialog.show(getActivity().getSupportFragmentManager(),"c");
+            }
+        });
+    }
 
     @Override
     public void onStart() {
         super.onStart();
-        firebaseAuth.addAuthStateListener(authListener);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        if (authListener != null) {
-            firebaseAuth.removeAuthStateListener(authListener);
-        }
     }
 
     public void updateAvailableTorrents(ArrayList<String> torrent) {
-
+        Log.i(TAG, "updateAvailableTorrents: "+torrent.size());
         RecyclerView rc = (RecyclerView) view.findViewById(R.id.rec_new_torrents);
 
         JustAddedAdapter justAddedAdapter = new JustAddedAdapter(torrent, getContext(), rc);
@@ -356,5 +352,15 @@ public class HomeTab extends Fragment implements View.OnClickListener {
     public void setMessageIcon(){
         newMessageIcon.setVisibility(View.VISIBLE);
         newMessageIcon.setText("1");
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if(getActivity().getIntent().getExtras()!=null){
+            if(getActivity().getIntent().getExtras().getStringArrayList(NottifiactionService.NEW_FILMS)!=null) {
+                updateAvailableTorrents(getActivity().getIntent().getExtras().getStringArrayList(NottifiactionService.NEW_FILMS));
+            }
+        }
     }
 }

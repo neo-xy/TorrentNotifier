@@ -59,7 +59,6 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
     private SimpleDateFormat sdf;
     private CountDownTimer countDownTimer;
     private  long timePassed;
-    String countCharachters;
 
     public AskForAtipFragment() {
     }
@@ -210,6 +209,9 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
 
     private void pickRandomUserFromTheList() {
         users = new ArrayList<>();
+        if(users==null){
+            Log.i(TAG, "pickRandomUserFromTheList: null");
+        }
         message.getListOfUSers(this);
 
     }
