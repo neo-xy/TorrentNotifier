@@ -48,7 +48,7 @@ public class HomeTab extends Fragment implements View.OnClickListener {
 
     private View view;
     private ImageButton btnTip;
-    private TextView  tvTipTitle;
+    private TextView tvTipTitle;
     private TextView textView1, textView2, textView3, textView4, textView5;
     private ImageView addView1, addView2, addView3, addView4, addView5;
     private ImageView linkView1, linkView2, linkView3, linkView4, linkView5;
@@ -61,7 +61,8 @@ public class HomeTab extends Fragment implements View.OnClickListener {
     private FirebaseAuth firebaseAuth;
     private DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference();
     private ImageButton chatBtn;
-    ChatDialog chatDialog;
+    public int nrItem;
+
 
     public HomeTab() {
         // Required empty public constructor
@@ -72,17 +73,16 @@ public class HomeTab extends Fragment implements View.OnClickListener {
                              Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_home_tab, container, false);
 
-        chatDialog = new ChatDialog();
 
-        if(savedInstanceState==null){
-        }else{
+        if (savedInstanceState == null) {
+        } else {
         }
         firebaseAuth = FirebaseAuth.getInstance();
 
         btnTip = (ImageButton) view.findViewById(R.id.ib_tip_link);
         tvTipTitle = (TextView) view.findViewById(R.id.tv_tip_title);
-        newMessageIcon = (TextView)view.findViewById(R.id.btn_chat_notis2);
-      
+        newMessageIcon = (TextView) view.findViewById(R.id.btn_chat_notis2);
+
 
         findViews(view);
         Typeface typeface = Typeface.createFromAsset(getContext().getAssets(), "fonts/ubuntu.ttf");
@@ -167,8 +167,15 @@ public class HomeTab extends Fragment implements View.OnClickListener {
         databaseReference.child("users").child(uid).child("question").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.i(TAG, "onDataChange: zzzzzzz");
                 if (dataSnapshot.getValue() != null) {
                     setMessageIcon();
+                  nrItem=1;
+
+                }
+                if (dataSnapshot.getValue() == null) {
+                    newMessageIcon.setVisibility(View.GONE);
+                    nrItem=0;
                 }
             }
 
@@ -219,52 +226,52 @@ public class HomeTab extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        if(firebaseAuth.getCurrentUser()!=null){
-        int id = v.getId();
-        switch (id) {
-            case R.id.add1:
-                addMovieToDatabase(imdb1, textView1.getText().toString());
-                break;
-            case R.id.add2:
-                addMovieToDatabase(imdb1, textView2.getText().toString());
-                break;
-            case R.id.add3:
-                addMovieToDatabase(imdb1, textView3.getText().toString());
-                break;
-            case R.id.add4:
-                addMovieToDatabase(imdb1, textView4.getText().toString());
-                break;
-            case R.id.add5:
-                addMovieToDatabase(imdb1, textView5.getText().toString());
-                break;
-            case R.id.link1:
-                openLink(imdb1);
-                break;
-            case R.id.link2:
-                openLink(imdb2);
-                break;
-            case R.id.link3:
-                openLink(imdb3);
-                break;
-            case R.id.link4:
-                openLink(imdb4);
-                break;
-            case R.id.link5:
-                openLink(imdb5);
-                break;
-            case R.id.delete_button:
-                break;
-            case R.id.ib_tip_link:
-                openLink(tipLink);
-                break;
+        if (firebaseAuth.getCurrentUser() != null) {
+            int id = v.getId();
+            switch (id) {
+                case R.id.add1:
+                    addMovieToDatabase(imdb1, textView1.getText().toString());
+                    break;
+                case R.id.add2:
+                    addMovieToDatabase(imdb1, textView2.getText().toString());
+                    break;
+                case R.id.add3:
+                    addMovieToDatabase(imdb1, textView3.getText().toString());
+                    break;
+                case R.id.add4:
+                    addMovieToDatabase(imdb1, textView4.getText().toString());
+                    break;
+                case R.id.add5:
+                    addMovieToDatabase(imdb1, textView5.getText().toString());
+                    break;
+                case R.id.link1:
+                    openLink(imdb1);
+                    break;
+                case R.id.link2:
+                    openLink(imdb2);
+                    break;
+                case R.id.link3:
+                    openLink(imdb3);
+                    break;
+                case R.id.link4:
+                    openLink(imdb4);
+                    break;
+                case R.id.link5:
+                    openLink(imdb5);
+                    break;
+                case R.id.delete_button:
+                    break;
+                case R.id.ib_tip_link:
+                    openLink(tipLink);
+                    break;
 
-            default:
+                default:
 
-                break;
-        }
+                    break;
+            }
 
-            }else{
-            Toast.makeText(getContext(),"Log In to Usa this Fucnction",LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getContext(), "Log In to Usa this Fucnction", LENGTH_SHORT).show();
         }
     }
 
@@ -283,7 +290,7 @@ public class HomeTab extends Fragment implements View.OnClickListener {
         databaseReference.child("users").child(firebaseAuth.getCurrentUser().getUid()).child("movieList").child(title).child("available").setValue(false).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Toast.makeText(getActivity(),"Movie added to Your List", LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Movie added to Your List", LENGTH_SHORT).show();
             }
         });
     }
@@ -321,13 +328,8 @@ public class HomeTab extends Fragment implements View.OnClickListener {
         addView5.setOnClickListener(this);
 
 
-        chatBtn =(ImageButton)view.findViewById(R.id.ibtnchat);
-        chatBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                chatDialog.show(getActivity().getSupportFragmentManager(),"c");
-            }
-        });
+        chatBtn = (ImageButton) view.findViewById(R.id.ibtnchat);
+        chatBtn.setOnClickListener((View.OnClickListener) getActivity());
     }
 
     @Override
@@ -341,7 +343,7 @@ public class HomeTab extends Fragment implements View.OnClickListener {
     }
 
     public void updateAvailableTorrents(ArrayList<String> torrent) {
-        Log.i(TAG, "updateAvailableTorrents: "+torrent.size());
+        Log.i(TAG, "updateAvailableTorrents: " + torrent.size());
         RecyclerView rc = (RecyclerView) view.findViewById(R.id.rec_new_torrents);
 
         JustAddedAdapter justAddedAdapter = new JustAddedAdapter(torrent, getContext(), rc);
@@ -349,16 +351,18 @@ public class HomeTab extends Fragment implements View.OnClickListener {
         rc.setAdapter(justAddedAdapter);
         rc.setVisibility(View.VISIBLE);
     }
-    public void setMessageIcon(){
+
+    public void setMessageIcon() {
         newMessageIcon.setVisibility(View.VISIBLE);
         newMessageIcon.setText("1");
+
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if(getActivity().getIntent().getExtras()!=null){
-            if(getActivity().getIntent().getExtras().getStringArrayList(NottifiactionService.NEW_FILMS)!=null) {
+        if (getActivity().getIntent().getExtras() != null) {
+            if (getActivity().getIntent().getExtras().getStringArrayList(NottifiactionService.NEW_FILMS) != null) {
                 updateAvailableTorrents(getActivity().getIntent().getExtras().getStringArrayList(NottifiactionService.NEW_FILMS));
             }
         }

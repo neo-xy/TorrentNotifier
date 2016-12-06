@@ -1,6 +1,7 @@
 package com.basicelixir.pawel.torrentnotifier;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -68,12 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         onNewIntent(getIntent());
 
-
-
-
-
         notificationAllowed = this.getSharedPreferences("notificationAllowed", MODE_PRIVATE).getBoolean("notificationAllowed", true);
-
 
         FacebookSdk.sdkInitialize(getApplicationContext());
         AppEventsLogger.activateApp(this);
@@ -82,12 +78,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Toolbar toolbar = (Toolbar) findViewById(R.id.myTooolbar);
         setSupportActionBar(toolbar);
 
-        messageIntent = new Intent(this, FirebaseBackgroundService.class);
+       if(!isMyServiceRunning(FirebaseBackgroundService.class)){
+           messageIntent = new Intent(this, FirebaseBackgroundService.class);
+           if(notificationAllowed) {
 
+               this.startService(messageIntent);
+           }
+       }
 
-        this.startService(messageIntent);
-       // chatDialog = new ChatDialog();
-
+         
         notificationSwitch = (Switch) findViewById(R.id.switch_view);
         notificationSwitch.setChecked(notificationAllowed);
 
@@ -155,6 +154,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fragmentList.add(new ImdbTab());
         fragmentList.add(new MyListTab());
 
+
         MyPagerAdapter myPagerAdapter = new MyPagerAdapter(getSupportFragmentManager(), fragmentList);
         viewPager.setAdapter(myPagerAdapter);
 
@@ -170,7 +170,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         if (firebaseauth.getCurrentUser() != null) {
             if (view == findViewById(R.id.ibtnchat)) {
-               // chatDialog.show(getSupportFragmentManager(), "dialogchat");
+                chatDialog =new ChatDialog();
+                Bundle b = new Bundle();
+                b.putInt("nr",homeTab.nrItem);
+
+                chatDialog.setArguments(b);
+
+
+                chatDialog.show(getSupportFragmentManager(), "dialogchat");
             }
         } else {
             Toast.makeText(getBaseContext(), "Log In to Usa this Fucnction", Toast.LENGTH_SHORT).show();
@@ -251,5 +258,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         isOnForground = true;
+    }
+    public ChatDialog getchatDialog(){
+        return chatDialog;
+    }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

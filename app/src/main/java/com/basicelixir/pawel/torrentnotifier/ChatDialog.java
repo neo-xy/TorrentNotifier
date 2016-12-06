@@ -20,7 +20,13 @@ import java.util.ArrayList;
 public class ChatDialog extends DialogFragment implements View.OnClickListener {
 
     private String TAG = "pawell";
-    ViewPager viewPager;
+    private ViewPager viewPager;
+    int nr;
+
+   public ChatDialog(){
+
+    }
+
 
     @Nullable
     @Override
@@ -28,6 +34,7 @@ public class ChatDialog extends DialogFragment implements View.OnClickListener {
        View view = inflater.inflate(R.layout.dialog_chat, container, false);
 
 
+        nr = getArguments().getInt("nr");
         view.setOnClickListener(this);
         int widthOfPhone = getActivity().getWindow().getWindowManager().getDefaultDisplay().getWidth();
         widthOfPhone = widthOfPhone - widthOfPhone / 8;
@@ -45,6 +52,7 @@ public class ChatDialog extends DialogFragment implements View.OnClickListener {
         ChataAdapter chataAdapter = new ChataAdapter(getChildFragmentManager());
         chataAdapter.setFragments(fragments);
         viewPager.setAdapter(chataAdapter);
+        viewPager.setCurrentItem(nr);
 
         tableLayout.setupWithViewPager(viewPager);
 
@@ -53,5 +61,13 @@ public class ChatDialog extends DialogFragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
+    }
+    public void setShowenItem(int nr){
+        if(viewPager!=null){
+            Log.i(TAG, "setShowenItem: ");
+            viewPager.setCurrentItem(nr);
+
+        }
+
     }
 }
