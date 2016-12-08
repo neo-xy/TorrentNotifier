@@ -2,10 +2,8 @@ package com.basicelixir.pawel.torrentnotifier;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,13 +14,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
-import io.realm.RealmResults;
-
-/**
- * Created by Pawel on 25/05/2016.
- */
 public class MyListAdapter extends RecyclerView.Adapter<MyListAdapter.MyHolder> {
     static String TAG = "pawell";
     private ArrayList<Movie> movieList;

@@ -15,7 +15,7 @@
         android:text="@string/most_pop"
         android:gravity="center"
         android:textSize="16sp"
-        android:textColor="@color/pugnotification_color_white" />
+        android:textColor="@android:color/white" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -34,7 +34,7 @@
             android:background="@drawable/underline"
             android:paddingStart="6dp"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@color/pugnotification_color_white" />
+            android:textColor="@android:color/white" />
 
         <ImageView
             android:id="@+id/link1"
@@ -73,7 +73,7 @@
             android:layout_marginEnd="20dp"
             android:background="@drawable/underline"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@color/pugnotification_color_white" />
+            android:textColor="@android:color/white" />
 
         <ImageView
             android:id="@+id/link2"
@@ -112,7 +112,7 @@
             android:background="@drawable/underline"
             android:paddingStart="6dp"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@color/pugnotification_color_white" />
+            android:textColor="@android:color/white" />
 
         <ImageView
             android:id="@+id/link3"
@@ -152,7 +152,7 @@
             android:background="@drawable/underline"
             android:paddingStart="6dp"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@color/pugnotification_color_white" />
+            android:textColor="@android:color/white" />
 
         <ImageView
             android:id="@+id/link4"
@@ -193,7 +193,7 @@
             android:paddingStart="6dp"
             android:paddingEnd="1dp"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@color/pugnotification_color_white" />
+            android:textColor="@android:color/white" />
 
         <ImageView
             android:id="@+id/link5"

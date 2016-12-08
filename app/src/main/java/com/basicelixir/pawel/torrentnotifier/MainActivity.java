@@ -4,19 +4,12 @@ import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.os.*;
-import android.os.Message;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.os.ResultReceiver;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -24,10 +17,8 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.Toast;
@@ -43,8 +34,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Set;
 
 import layout.HomeTab;
 import layout.ImdbTab;
@@ -57,11 +46,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private FirebaseAuth.AuthStateListener authListener;
     private String currentUser;
     private Switch notificationSwitch;
-    Intent messageIntent;
+    private Intent messageIntent;
     private Boolean notificationAllowed;
-    ChatDialog chatDialog;
-    Set foo;
-    boolean isOnForground;
+    private boolean isOnForground;
+    private DatabaseReference firebaseDatabase;
 
 
     @Override
@@ -69,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         onNewIntent(getIntent());
 
+        firebaseDatabase = FirebaseDatabase.getInstance().getReference();
         notificationAllowed = this.getSharedPreferences("notificationAllowed", MODE_PRIVATE).getBoolean("notificationAllowed", true);
 
         FacebookSdk.sdkInitialize(getApplicationContext());
@@ -77,16 +66,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.myTooolbar);
         setSupportActionBar(toolbar);
+        if (!isMyServiceRunning(FirebaseBackgroundService.class)) {
+            messageIntent = new Intent(this, FirebaseBackgroundService.class);
+            if (notificationAllowed) {
 
-       if(!isMyServiceRunning(FirebaseBackgroundService.class)){
-           messageIntent = new Intent(this, FirebaseBackgroundService.class);
-           if(notificationAllowed) {
+                this.startService(messageIntent);
+            }
+        }
 
-               this.startService(messageIntent);
-           }
-       }
 
-         
         notificationSwitch = (Switch) findViewById(R.id.switch_view);
         notificationSwitch.setChecked(notificationAllowed);
 
@@ -98,11 +86,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     notificationAllowed = true;
                     getApplication().startService(messageIntent);
+                    firebaseDatabase.child("users").child(currentUser).child("notificationAlowed").setValue(true);
+
                     Toast.makeText(getBaseContext(), "'Question' notifications are turn ON", Toast.LENGTH_SHORT)
                             .show();
                 } else {
                     notificationAllowed = false;
                     getApplication().stopService(messageIntent);
+                    firebaseDatabase.child("users").child(currentUser).child("notificationAlowed").setValue(false);
                     Toast.makeText(getBaseContext(), "'Question' notifications are turn OFF", Toast.LENGTH_SHORT)
                             .show();
                 }
@@ -146,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         intent.putExtra("reciver", rr);
         startService(intent);
         PendingIntent pendingIntent = PendingIntent.getService(this, 100, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 5000, 120000, pendingIntent);
+        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 5000, 300000, pendingIntent);
 
         homeTab = new HomeTab();
         ArrayList<Fragment> fragmentList = new ArrayList<Fragment>();
@@ -170,9 +161,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         if (firebaseauth.getCurrentUser() != null) {
             if (view == findViewById(R.id.ibtnchat)) {
-                chatDialog =new ChatDialog();
+                ChatDialog chatDialog = new ChatDialog();
                 Bundle b = new Bundle();
-                b.putInt("nr",homeTab.nrItem);
+                b.putInt("nr", homeTab.nrItem);
 
                 chatDialog.setArguments(b);
 
@@ -258,9 +249,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
         isOnForground = true;
-    }
-    public ChatDialog getchatDialog(){
-        return chatDialog;
     }
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {

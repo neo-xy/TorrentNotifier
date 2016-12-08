@@ -1,6 +1,5 @@
 package com.basicelixir.pawel.torrentnotifier;
 
-import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
@@ -8,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.PopupMenu;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,35 +33,31 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-/**
- * Created by Pawel on 06/10/2016.
- */
 
 public class QuestionFragent extends Fragment implements View.OnClickListener {
 
-    FirebaseAuth firebaseAuth;
-    FirebaseDatabase firebaseDatabase;
-    Button sendBtn;
+    private FirebaseAuth firebaseAuth;
+    private FirebaseDatabase firebaseDatabase;
+    private Button sendBtn;
     String TAG = "pawell";
-    String currentUser;
-    LinearLayout linearLayout;
-    View view;
-    EditText inserMessageEt;
-    long count;
-    String userWithTheQusetion;
-    String insertedText;
-    DatabaseReference questionReference;
-    Message message;
-    DatabaseReference dr;
-    ScrollView scrollView;
-    TextView countTV, timer;
-    CountDownTimer countDownTimer;
-    String timeStemp;
-    SimpleDateFormat sdf;
-    long g;
-    ImageButton reportButton;
+    private String currentUser;
+    private LinearLayout linearLayout;
+    private View view;
+    private EditText inserMessageEt;
+    private long count;
+    private String userWithTheQusetion;
+    private String insertedText, timeStemp;
+    private DatabaseReference questionReference;
+    private Message message;
+    private DatabaseReference dr;
+    private ScrollView scrollView;
+    private TextView countTV, timer;
+
+    private SimpleDateFormat sdf;
+    long timerLeft;
+
     private ChildEventListener questionListener;
-    TextView messageLength;
+    private TextView messageLength;
 
 
     @Nullable
@@ -69,7 +65,7 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_ask_for, container, false);
         sendBtn = (Button) view.findViewById(R.id.ask_for_btn_send2);
-        messageLength = (TextView)view.findViewById(R.id.messageLength);
+        messageLength = (TextView) view.findViewById(R.id.messageLength);
 
         sendBtn.setOnClickListener(this);
         sendBtn.setEnabled(false);
@@ -81,7 +77,7 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
         countTV = (TextView) view.findViewById(R.id.tv_count);
         timer = (TextView) view.findViewById(R.id.stoper_tv);
         sdf = new SimpleDateFormat("mm:ss");
-        reportButton = (ImageButton) view.findViewById(R.id.ib_report);
+        ImageButton reportButton  = (ImageButton) view.findViewById(R.id.ib_report);
         reportButton.setOnClickListener(this);
 
 
@@ -101,8 +97,7 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                messageLength.setText(String.valueOf(30-editable.length()));
-
+                messageLength.setText(String.valueOf(30 - editable.length()));
             }
         });
         linearLayout = (LinearLayout) view.findViewById(R.id.ask_for_ll);
@@ -116,7 +111,6 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
                 if (dataSnapshot.getValue() != null && dataSnapshot.getKey().equals("quesTime")) {
                     timeStemp = dataSnapshot.getValue().toString();
                     setTimer();
-
                 }
 
                 if (dataSnapshot.getValue() != null && dataSnapshot.getKey().equals("question")) {
@@ -125,6 +119,7 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
                     String url = dataSnapshot.getValue().toString();
 
                     dr = firebaseDatabase.getReferenceFromUrl(url.trim());
+                    userWithTheQusetion=dr.getParent().getParent().getKey();
 
                     dr.addValueEventListener(new ValueEventListener() {
                         @Override
@@ -164,9 +159,9 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
     }
 
     private void setTimer() {
-        g = System.currentTimeMillis() - Long.parseLong(timeStemp);
+        timerLeft = System.currentTimeMillis() - Long.parseLong(timeStemp);
         timer.setVisibility(View.VISIBLE);
-        countDownTimer = new CountDownTimer(Message.timeAvailable - g, 1000) {
+         new CountDownTimer(Message.timeAvailable - timerLeft, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
 
@@ -235,39 +230,13 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
 
                 }
             });
-
-
         }
-
-    }
-
-    private long getMessageCount() {
-
-        count = 0;
-        firebaseDatabase.getReference().child("users").child(currentUser).child("question").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                count = dataSnapshot.getChildrenCount();
-                for (DataSnapshot d : dataSnapshot.getChildren()) {
-                    userWithTheQusetion = d.getKey().toString();
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-
-        return count;
     }
 
     @Override
     public void onStart() {
         super.onStart();
-      questionReference.addChildEventListener(questionListener);
-
+        questionReference.addChildEventListener(questionListener);
     }
 
     @Override

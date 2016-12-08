@@ -1,14 +1,8 @@
 package com.basicelixir.pawel.torrentnotifier;
 
-import io.realm.RealmObject;
-import io.realm.annotations.PrimaryKey;
 
-/**
- * Created by Pawel on 19/05/2016.
- */
 public class Movie {
     String title;
-    @PrimaryKey
     private String movieURL;
     private boolean availableForDownload;
     private boolean activated;

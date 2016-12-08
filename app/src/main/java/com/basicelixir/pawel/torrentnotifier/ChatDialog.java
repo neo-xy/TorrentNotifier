@@ -13,10 +13,6 @@ import android.view.ViewGroup;
 
 import java.util.ArrayList;
 
-/**
- * Created by Pawel on 02/10/2016.
- */
-
 public class ChatDialog extends DialogFragment implements View.OnClickListener {
 
     private String TAG = "pawell";

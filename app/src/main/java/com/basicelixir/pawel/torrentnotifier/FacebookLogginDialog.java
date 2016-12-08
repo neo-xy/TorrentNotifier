@@ -11,7 +11,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DecodeFormat;
+import com.bumptech.glide.request.target.Target;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
@@ -39,12 +43,21 @@ public class FacebookLogginDialog extends DialogFragment {
     private FacebookLogOutListener faceBookLogOutLisetener;
     private SharedPreferences sharedPreferences;
     private Context context;
+    private ImageView loginIv;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.dialog_log_in, container, false);
         faceBookBtn = (LoginButton) view.findViewById(R.id.faceBook_login_button);
+        loginIv =(ImageView)view.findViewById(R.id.loginBg);
+
+        Glide.with(this)
+                .load(R.drawable.login)
+                .asBitmap()
+                .format(DecodeFormat.PREFER_ARGB_8888)
+                .override(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+                .into(loginIv);
         fireBaseAuth = FirebaseAuth.getInstance();
         callbackManager = CallbackManager.Factory.create();
         firebaseDatabase = FirebaseDatabase.getInstance();

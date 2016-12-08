@@ -13,9 +13,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 
-/**
- * Created by Pawel on 14/05/2016.
- */
 public class Torrent extends AsyncTask<Void, Void, ArrayList<NewTorrentMovies>> {
 
 

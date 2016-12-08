@@ -1,18 +1,11 @@
 package com.basicelixir.pawel.torrentnotifier;
 
-import android.app.Service;
-import android.content.Intent;
-import android.os.IBinder;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
 
-/**
- * Created by Pawel on 21/09/2016.
- */
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 String TAG="pawell";

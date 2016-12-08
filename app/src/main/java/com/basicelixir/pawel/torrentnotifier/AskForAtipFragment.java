@@ -7,9 +7,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.PopupMenu;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.method.KeyListener;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -38,18 +36,14 @@ import java.util.Random;
 public class AskForAtipFragment extends Fragment implements View.OnClickListener,ListListener {
 
    private FirebaseDatabase firebase;
-    private FirebaseAuth fireAuth;
     private DatabaseReference askReference;
 
 
     private String currentUser, pickedUser, lastUser,timeStemp;
     private String TAG = "pawell";
 
-    private ImageButton reportButtn;
-    private View view;
     private LinearLayout linearLayout;
     private EditText insertMessageEt;
-    private Button sendBtn;
     private TextView timer, countBtn,messageLenght;
     private ScrollView scrollView;
 
@@ -57,8 +51,6 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
     private ArrayList users;
     private long numberOfMessages;
     private SimpleDateFormat sdf;
-    private CountDownTimer countDownTimer;
-    private  long timePassed;
 
     public AskForAtipFragment() {
     }
@@ -66,7 +58,7 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.fragment_ask_for, container, false);
+       View view = inflater.inflate(R.layout.fragment_ask_for, container, false);
         insertMessageEt = (EditText) view.findViewById(R.id.ask_for_et_insert_message);
         insertMessageEt.setHint(getContext().getResources().getString(R.string.hintMessage));
         insertMessageEt.setHintTextColor(getResources().getColor(R.color.lightGray));
@@ -74,36 +66,32 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
         insertMessageEt.addTextChangedListener(new TextWatcher() {
          @Override
          public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
          }
 
          @Override
          public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-
          }
 
          @Override
          public void afterTextChanged(Editable editable) {
              Log.i(TAG, "afterTextChanged: "+editable.length());
              messageLenght.setText(String.valueOf(30-editable.length()));
-
          }
      });
 
-        sendBtn = (Button) view.findViewById(R.id.ask_for_btn_send2);
+        Button sendBtn = (Button) view.findViewById(R.id.ask_for_btn_send2);
         sendBtn.setOnClickListener(this);
         timer = (TextView) view.findViewById(R.id.stoper_tv);
         scrollView =(ScrollView)view.findViewById(R.id.ask_for_scroll);
         countBtn = (TextView) view.findViewById(R.id.tv_count);
-        reportButtn = (ImageButton)view.findViewById(R.id.ib_report);
+        ImageButton reportButtn = (ImageButton)view.findViewById(R.id.ib_report);
         reportButtn.setOnClickListener(this);
-
 
         linearLayout = (LinearLayout) view.findViewById(R.id.ask_for_ll);
         message = new Message(getContext());
 
         firebase = FirebaseDatabase.getInstance();
-        fireAuth = FirebaseAuth.getInstance();
+        FirebaseAuth fireAuth = FirebaseAuth.getInstance();
         if(fireAuth.getCurrentUser()!=null){
             currentUser = fireAuth.getCurrentUser().getUid();
             askReference = firebase.getReference().child("users").child(currentUser).child("ask");
@@ -114,14 +102,11 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
 
             fillUpQuestionDialog();
         }
-
-
         return view;
     }
 
     private void fillUpQuestionDialog() {
         getLastUser();
-
     }
 
     private String getLastUser() {
@@ -158,7 +143,7 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
                 }
 
                 if (timeStemp != null && lastUser != null) {
-                    if ((System.currentTimeMillis() - Long.parseLong(timeStemp)) < 100000) {
+                    if ((System.currentTimeMillis() - Long.parseLong(timeStemp)) < 300000) {
                         message.fillUpWindowMessage(askReference, currentUser, lastUser, timeStemp, linearLayout,scrollView, AskForAtipFragment.this);
 
                     } else {
@@ -175,13 +160,12 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
             public void onCancelled(DatabaseError databaseError) {
             }
         });
-
         return timeStemp;
     }
 
     private void setTimer() {
-        timePassed = System.currentTimeMillis() - Long.parseLong(timeStemp);
-        countDownTimer = new CountDownTimer(Message.timeAvailable - timePassed, 1000) {
+        long timePassed = System.currentTimeMillis() - Long.parseLong(timeStemp);
+        new CountDownTimer(Message.timeAvailable - timePassed, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 timer.setVisibility(View.VISIBLE);
@@ -209,11 +193,7 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
 
     private void pickRandomUserFromTheList() {
         users = new ArrayList<>();
-        if(users==null){
-            Log.i(TAG, "pickRandomUserFromTheList: null");
-        }
         message.getListOfUSers(this);
-
     }
 
     @Override
@@ -232,7 +212,6 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
                         for (int i = 0; i < ll.getChildCount(); i++) {
                             TextView mess = (TextView)ll.getChildAt(i);
                             textMessages.add(mess.getText().toString());
-
                         }
                         ReportedMessage rm = new ReportedMessage(textMessages,currentUser, lastUser, new Date().getTime(),"ask");
                         firebase.getReference().child("Reported").push().setValue(rm);
@@ -244,13 +223,10 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
             popupMenu.show();
         }
         if(v.getId()== R.id.ask_for_btn_send2) {
-            Log.i(TAG, "onClick: 1");
             if (lastUser != null && timeStemp != null && System.currentTimeMillis() - Long.parseLong(timeStemp) < 300000 && !lastUser.equals("")) {
-                Log.i(TAG, "onClick: 2");
                 askReference.child(lastUser).addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        Log.i(TAG, "onDataChange: 3");
                         numberOfMessages = dataSnapshot.getChildrenCount();
                         if (numberOfMessages < 10) {
 
@@ -270,10 +246,8 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
                     }
                 });
             } else {
-                Log.i(TAG, "onClick: else");
                 pickRandomUserFromTheList();
             }
-
         }
     }
 
@@ -285,7 +259,7 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
     @Override
     public void getList(ArrayList<String> list) {
         users = list;
-        if(users!=null && users.size()>0) {
+        if(users!=null && users.size()>0&&!users.isEmpty()) {
             while (pickedUser.equals("") || pickedUser.equals(currentUser)) {
 
                 Random random = new Random();
@@ -318,6 +292,5 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
         }else{
             Toast.makeText(getContext(),"no available users right at this moment",Toast.LENGTH_SHORT).show();
         }
-
     }
 }

@@ -1,11 +1,5 @@
 package com.basicelixir.pawel.torrentnotifier;
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
-/**
- * Created by Pawel on 12/06/2016.
- */
 
 public class NewTorrentMovies {
     String imdbUrl;

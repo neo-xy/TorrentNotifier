@@ -2,7 +2,6 @@ package com.basicelixir.pawel.torrentnotifier;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -24,7 +23,7 @@ public class Message {
     private ArrayList<String> listOfUsers;
     String TAG = "pawell";
     private ScrollView scrollView;
-    static long timeAvailable = 100000;
+    static long timeAvailable = 300000;
     private ListListener listListener;
 
     public Message(Context context) {
@@ -102,16 +101,14 @@ public class Message {
         firebaseDatabase.getReference().child("users").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
                 for (DataSnapshot d : dataSnapshot.getChildren()) {
 
-                    if (d.child("quesTime").getValue() == null && d.child("eligebleForChat").getValue(Boolean.class)) {
+                    if (d.child("quesTime").getValue() == null && d.child("eligebleForChat").getValue(Boolean.class)&& d.child("notificationAlowed").getValue(Boolean.class)) {
                         listOfUsers.add(d.getKey());
                     }
                 }
                 listListener.getList(listOfUsers);
             }
-
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }
