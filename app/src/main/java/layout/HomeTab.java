@@ -178,7 +178,6 @@ public class HomeTab extends Fragment implements View.OnClickListener {
                     nrItem=0;
                 }
             }
-
             @Override
             public void onCancelled(DatabaseError databaseError) {
 
@@ -271,7 +270,7 @@ public class HomeTab extends Fragment implements View.OnClickListener {
             }
 
         } else {
-            Toast.makeText(getContext(), "Log In to Usa this Fucnction", LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Log In to Use this Function", LENGTH_SHORT).show();
         }
     }
 

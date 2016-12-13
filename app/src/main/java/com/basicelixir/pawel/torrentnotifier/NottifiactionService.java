@@ -163,11 +163,10 @@ public class NottifiactionService extends IntentService {
             for (int i = 0; i < moviesToShow.size(); i++) {
                 Intent notificationIntent = new Intent(this, MainActivity.class);
                 notificationIntent.putStringArrayListExtra(NEW_FILMS,titles);
-                notificationIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
+                notificationIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.mipmap.ic_launcher)
+                        .setSmallIcon(R.mipmap.ic_launch)
                         .setAutoCancel(true)
                         .setColor(Color.BLACK)
                         .setPriority(2)

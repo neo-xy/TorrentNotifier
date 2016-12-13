@@ -3,10 +3,10 @@ package com.basicelixir.pawel.torrentnotifier;
 
 public class Movie {
     String title;
-    private String movieURL;
-    private boolean availableForDownload;
-    private boolean activated;
-    private String torrentFullName;
+    public String movieURL;
+    public boolean availableForDownload;
+    public boolean activated;
+    public String torrentFullName;
 
 
     public boolean isActivated() {

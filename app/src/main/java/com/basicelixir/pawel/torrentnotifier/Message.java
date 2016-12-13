@@ -17,14 +17,14 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 public class Message {
-    private String userId;
-    private Context context;
-    private LinearLayout linearLayout;
-    private ArrayList<String> listOfUsers;
+    public String userId;
+    public Context context;
+    public LinearLayout linearLayout;
+    public ArrayList<String> listOfUsers;
     String TAG = "pawell";
-    private ScrollView scrollView;
+    public ScrollView scrollView;
     static long timeAvailable = 300000;
-    private ListListener listListener;
+    public ListListener listListener;
 
     public Message(Context context) {
         this.context = context;

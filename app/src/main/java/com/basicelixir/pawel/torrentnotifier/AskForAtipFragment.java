@@ -51,6 +51,7 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
     private ArrayList users;
     private long numberOfMessages;
     private SimpleDateFormat sdf;
+    ImageButton reportButtn;
 
     public AskForAtipFragment() {
     }
@@ -74,18 +75,20 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
 
          @Override
          public void afterTextChanged(Editable editable) {
-             Log.i(TAG, "afterTextChanged: "+editable.length());
-             messageLenght.setText(String.valueOf(30-editable.length()));
+             messageLenght.setText(String.valueOf(60-editable.length()));
          }
      });
 
         Button sendBtn = (Button) view.findViewById(R.id.ask_for_btn_send2);
         sendBtn.setOnClickListener(this);
         timer = (TextView) view.findViewById(R.id.stoper_tv);
+        timer.setText("5:00");
         scrollView =(ScrollView)view.findViewById(R.id.ask_for_scroll);
         countBtn = (TextView) view.findViewById(R.id.tv_count);
-        ImageButton reportButtn = (ImageButton)view.findViewById(R.id.ib_report);
+        reportButtn = (ImageButton)view.findViewById(R.id.ib_report);
+        reportButtn.setEnabled(false);
         reportButtn.setOnClickListener(this);
+
 
         linearLayout = (LinearLayout) view.findViewById(R.id.ask_for_ll);
         message = new Message(getContext());
@@ -168,15 +171,15 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
         new CountDownTimer(Message.timeAvailable - timePassed, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
-                timer.setVisibility(View.VISIBLE);
                 timer.setText(sdf.format(millisUntilFinished));
+                reportButtn.setEnabled(true);
             }
 
             @Override
             public void onFinish() {
 
-                timer.setText("");
-                timer.setVisibility(View.GONE);
+                timer.setText("5:00");
+                reportButtn.setEnabled(false);
                 firebase.getReference().child("users").child(currentUser).child("timeStemp").removeValue();
                 firebase.getReference().child("users").child(currentUser).child("lastUser").removeValue();
                 firebase.getReference().child("users").child(lastUser).child("question").removeValue();
@@ -229,7 +232,6 @@ public class AskForAtipFragment extends Fragment implements View.OnClickListener
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         numberOfMessages = dataSnapshot.getChildrenCount();
                         if (numberOfMessages < 10) {
-
                             countBtn.setText(String.valueOf(9 - numberOfMessages));
                             askReference.child(lastUser).child(numberOfMessages + "ma").setValue(insertMessageEt.getText().toString());
                             firebase.getReference().child("users").child(lastUser).child("question").setValue(askReference.child(lastUser).toString());

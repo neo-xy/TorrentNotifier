@@ -29,8 +29,8 @@ public class ImdbTab extends Fragment implements View.OnClickListener {
     String TAG = "pawell";
 
     private WebView webView;
-    private String movieURL;
-    private String title;
+    public String movieURL;
+    public String title;
     private String currentUser;
 
     private FirebaseAuth.AuthStateListener authStateListener;
@@ -96,8 +96,17 @@ public class ImdbTab extends Fragment implements View.OnClickListener {
 //TODO contains title räcker inte till "news" inehåller "title" i url också
 
             movieURL = movieURL.replace("http://", "");
-
-
+            if(title.contains(".")){
+                Log.i(TAG, "onClick:contains . ");
+               title = title.replace("."," ");
+            }
+            if(title.contains(",")){
+                title =title.replace(","," ");
+            }
+            if(title.contains("-")){
+               title= title.replace("-"," ");
+            }
+            Log.i(TAG, "onClick:t " +title);
             firebaseDatabase.getReference().child("users").child(currentUser).child("movieList").child(title).child("url").setValue(movieURL);
             firebaseDatabase.getReference().child("users").child(currentUser).child("movieList").child(title).child("available").setValue(false).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override

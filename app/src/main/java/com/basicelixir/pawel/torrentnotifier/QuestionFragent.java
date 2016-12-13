@@ -52,6 +52,7 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
     private DatabaseReference dr;
     private ScrollView scrollView;
     private TextView countTV, timer;
+    private ImageButton reportButton;
 
     private SimpleDateFormat sdf;
     long timerLeft;
@@ -75,9 +76,12 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
 
         scrollView = (ScrollView) view.findViewById(R.id.ask_for_scroll);
         countTV = (TextView) view.findViewById(R.id.tv_count);
+        countTV.setText("messages left: 10");
         timer = (TextView) view.findViewById(R.id.stoper_tv);
+        timer.setText("5:00");
         sdf = new SimpleDateFormat("mm:ss");
-        ImageButton reportButton  = (ImageButton) view.findViewById(R.id.ib_report);
+       reportButton  = (ImageButton) view.findViewById(R.id.ib_report);
+        reportButton.setEnabled(false);
         reportButton.setOnClickListener(this);
 
 
@@ -97,7 +101,7 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                messageLength.setText(String.valueOf(30 - editable.length()));
+                messageLength.setText(String.valueOf(60 - editable.length()));
             }
         });
         linearLayout = (LinearLayout) view.findViewById(R.id.ask_for_ll);
@@ -165,21 +169,23 @@ public class QuestionFragent extends Fragment implements View.OnClickListener {
             @Override
             public void onTick(long millisUntilFinished) {
 
+                reportButton.setEnabled(true);
                 timer.setVisibility(View.VISIBLE);
                 timer.setText(sdf.format(millisUntilFinished));
             }
 
             @Override
             public void onFinish() {
-                timer.setText("");
-                timer.setVisibility(View.GONE);
+                timer.setText("5:00");
                 questionReference.child("quesTime").removeValue();
                 sendBtn.setEnabled(false);
+                reportButton.setEnabled(false);
+                countTV.setText("messages left: 10");
+
 
             }
         }.start();
     }
-
 
     @Override
     public void onClick(View v) {

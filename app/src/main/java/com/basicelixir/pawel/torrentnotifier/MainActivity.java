@@ -66,8 +66,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.myTooolbar);
         setSupportActionBar(toolbar);
-        if (!isMyServiceRunning(FirebaseBackgroundService.class)) {
+
             messageIntent = new Intent(this, FirebaseBackgroundService.class);
+            messageIntent.setFlags(PendingIntent.FLAG_UPDATE_CURRENT);
+        if (!isMyServiceRunning(FirebaseBackgroundService.class)) {
             if (notificationAllowed) {
 
                 this.startService(messageIntent);
@@ -76,29 +78,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
         notificationSwitch = (Switch) findViewById(R.id.switch_view);
-        notificationSwitch.setChecked(notificationAllowed);
 
 
-        notificationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if (b) {
+        if (notificationSwitch != null) {
+            notificationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    if (b) {
 
-                    notificationAllowed = true;
-                    getApplication().startService(messageIntent);
-                    firebaseDatabase.child("users").child(currentUser).child("notificationAlowed").setValue(true);
+                        notificationAllowed = true;
+                        getApplication().startService(messageIntent);
+                        firebaseDatabase.child("users").child(currentUser).child("notificationAlowed").setValue(true);
 
-                    Toast.makeText(getBaseContext(), "'Question' notifications are turn ON", Toast.LENGTH_SHORT)
-                            .show();
-                } else {
-                    notificationAllowed = false;
-                    getApplication().stopService(messageIntent);
-                    firebaseDatabase.child("users").child(currentUser).child("notificationAlowed").setValue(false);
-                    Toast.makeText(getBaseContext(), "'Question' notifications are turn OFF", Toast.LENGTH_SHORT)
-                            .show();
+                        Toast.makeText(getBaseContext(), "'Question' notifications are turn ON", Toast.LENGTH_SHORT)
+                                .show();
+                    } else {
+                        notificationAllowed = false;
+                        getApplication().stopService(messageIntent);
+                        firebaseDatabase.child("users").child(currentUser).child("notificationAlowed").setValue(false);
+                        Toast.makeText(getBaseContext(), "'Question' notifications are turn OFF", Toast.LENGTH_SHORT)
+                                .show();
+                    }
                 }
-            }
-        });
+            });
+        }
 
         firebaseauth = FirebaseAuth.getInstance();
 
@@ -110,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (firebaseUser != null) {
                     currentUser = firebaseUser.getUid();
                     notificationSwitch.setEnabled(true);
+                    notificationSwitch.setChecked(notificationAllowed);
                 }
                 if (firebaseUser == null) {
                     notificationSwitch.setEnabled(false);
@@ -135,9 +139,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         intent.putExtra("yes", true);
         intent.putExtra("reciver", rr);
-        startService(intent);
+      intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pendingIntent = PendingIntent.getService(this, 100, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 5000, 300000, pendingIntent);
+        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 5000,100000, pendingIntent);
 
         homeTab = new HomeTab();
         ArrayList<Fragment> fragmentList = new ArrayList<Fragment>();
@@ -150,6 +154,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         viewPager.setAdapter(myPagerAdapter);
 
         tableLayout.setupWithViewPager(viewPager);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
     }
 
     @Override
