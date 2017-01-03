@@ -66,7 +66,6 @@ public class NottifiactionService extends IntentService {
                         firebaseDatabase.getReference().child("users").child(firebaseAuth.getCurrentUser().getUid()).child("movieList").addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
-
                                 for(DataSnapshot d:dataSnapshot.getChildren()){
                                     Movie movie = new Movie();
                                     boolean available=false;

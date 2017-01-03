@@ -5,28 +5,28 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.os.StrictMode;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.Xml;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.webkit.WebView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.basicelixir.pawel.torrentnotifier.ChatDialog;
 import com.basicelixir.pawel.torrentnotifier.JustAddedAdapter;
 import com.basicelixir.pawel.torrentnotifier.MainActivity;
 import com.basicelixir.pawel.torrentnotifier.NottifiactionService;
 import com.basicelixir.pawel.torrentnotifier.R;
+import com.basicelixir.pawel.torrentnotifier.RecommendedTorrents;
+import com.google.android.gms.common.server.converter.StringToIntConverter;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -37,10 +37,20 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 
-import java.util.ArrayList;
-import java.util.Set;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
-import static android.content.Context.MODE_PRIVATE;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+
+import javax.net.ssl.HttpsURLConnection;
+
 import static android.widget.Toast.LENGTH_SHORT;
 
 public class HomeTab extends Fragment implements View.OnClickListener {
@@ -159,8 +169,12 @@ public class HomeTab extends Fragment implements View.OnClickListener {
             checkForMessages(firebaseAuth.getCurrentUser().getUid(), databaseReference);
         }
 
+
         return view;
     }
+
+
+
 
     private void checkForMessages(String uid, DatabaseReference databaseReference) {
 
@@ -331,16 +345,6 @@ public class HomeTab extends Fragment implements View.OnClickListener {
         chatBtn.setOnClickListener((View.OnClickListener) getActivity());
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-    }
-
     public void updateAvailableTorrents(ArrayList<String> torrent) {
         Log.i(TAG, "updateAvailableTorrents: " + torrent.size());
         RecyclerView rc = (RecyclerView) view.findViewById(R.id.rec_new_torrents);
@@ -365,5 +369,23 @@ public class HomeTab extends Fragment implements View.OnClickListener {
                 updateAvailableTorrents(getActivity().getIntent().getExtras().getStringArrayList(NottifiactionService.NEW_FILMS));
             }
         }
+        int SDK_INT = android.os.Build.VERSION.SDK_INT;
+        if (SDK_INT > 8)
+        {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
+                    .permitAll().build();
+            StrictMode.setThreadPolicy(policy);
+
+            WebView webview = new WebView(getContext());
+            String uset= webview.getSettings().getUserAgentString();
+            Log.i(TAG, "onViewCreated: "+uset);
+            webview.getSettings().setUserAgentString("Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30");
+
+           RecommendedTorrents rec = new RecommendedTorrents();
+
+
+
+        }
+
     }
 }
