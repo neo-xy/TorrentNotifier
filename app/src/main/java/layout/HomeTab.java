@@ -246,16 +246,16 @@ public class HomeTab extends Fragment implements View.OnClickListener {
                     addMovieToDatabase(imdb1, textView1.getText().toString());
                     break;
                 case R.id.add2:
-                    addMovieToDatabase(imdb1, textView2.getText().toString());
+                    addMovieToDatabase(imdb2, textView2.getText().toString());
                     break;
                 case R.id.add3:
-                    addMovieToDatabase(imdb1, textView3.getText().toString());
+                    addMovieToDatabase(imdb3, textView3.getText().toString());
                     break;
                 case R.id.add4:
-                    addMovieToDatabase(imdb1, textView4.getText().toString());
+                    addMovieToDatabase(imdb4, textView4.getText().toString());
                     break;
                 case R.id.add5:
-                    addMovieToDatabase(imdb1, textView5.getText().toString());
+                    addMovieToDatabase(imdb5, textView5.getText().toString());
                     break;
                 case R.id.link1:
                     openLink(imdb1);
